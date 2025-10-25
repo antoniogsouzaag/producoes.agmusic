@@ -1,0 +1,22 @@
+
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/antonio_garcia_landing/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Music {
+  id                Int      @id @default(autoincrement())
+  title             String
+  artist            String   @default("Antônio Garcia")
+  cloud_storage_path String
+  cover_image_path   String?
+  duration          Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

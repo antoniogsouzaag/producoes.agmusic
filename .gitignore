@@ -1,0 +1,22 @@
+# Diretórios de build e dependências
+/node_modules
+/.next/
+/.build/
+/.yarn/
+
+# Logs e arquivos de cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variáveis de ambiente secretas
+.env
+.env.local
+.env.production
+.env.development
+
+# Outros arquivos do sistema
+.DS_Store
+
+# Se você estiver usando Vercel/Next
+.vercel
