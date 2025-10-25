@@ -4,24 +4,33 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getFileUrl } from '@/lib/s3'
-// 1. IMPORTA O TIPO Music GERADO PELO PRISMA
-import { Music } from '@prisma/client' 
+
+// ----------------------------------------------------
+// 1. DEFINE UMA FUNÇÃO AUXILIAR PARA A QUERY E INFERE O TIPO DE RETORNO
+const getMusicsQuery = () => prisma.music.findMany({
+  orderBy: {
+    createdAt: 'desc',
+  },
+});
+
+// 2. EXTRAI O TIPO DO ARRAY DE RETORNO DA FUNÇÃO DO PRISMA
+// O tipo MusicArrayType é [Music, Music, Music, ...]
+type MusicArrayType = Awaited<ReturnType<typeof getMusicsQuery>>;
+
+// 3. EXTRAI O TIPO DO ITEM (MÚSICA) DO ARRAY
+type MusicType = MusicArrayType[number];
+// ----------------------------------------------------
+
 
 export async function GET() {
   try {
-    // Busca os dados do banco
-    const musics = await prisma.music.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
-    
-    // REMOVIDA A INTERFACE MANUAL
+    // A chamada da query agora usa a função auxiliar
+    const musics = await getMusicsQuery();
     
     // Generate signed URLs for each music file and cover image
     const musicsWithUrls = await Promise.all(
-      // 2. APLICA O TIPO IMPORTADO (Music) AO PARÂMETRO 'music'
-      musics.map(async (music: Music) => {
+      // APLICAÇÃO DO TIPO MusicType INFERIDO
+      musics.map(async (music: MusicType) => {
         const url = await getFileUrl(music.cloud_storage_path)
         const coverUrl = music.cover_image_path ? await getFileUrl(music.cover_image_path) : null
         return {
