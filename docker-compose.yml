@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    container_name: nextjs_site
+    restart: unless-stopped
+    env_file: ./env.production          # arquivo .env com variáveis
+    networks:
+      - webproxy
+    labels:
+      - "traefik.enable=true"
+      # substitua sub.example.com pelo seu subdomínio real
+      - "traefik.http.routers.nextjs.rule=Host(`producoes.agmusic.cloud`)"
+      - "traefik.http.routers.nextjs.entrypoints=websecure"
+      - "traefik.http.routers.nextjs.tls=true"
+      - "traefik.http.routers.nextjs.tls.certresolver=le"   # se Traefik usa certresolver 'le'
+      - "traefik.http.services.nextjs.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  webproxy:
+    external: true
+    name: traefik   # substitua se a sua rede externa do Traefik tiver outro nome

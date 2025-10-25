@@ -13,18 +13,26 @@ export async function GET() {
       },
     })
     
+    interface Music {
+  id: number
+  title: string
+  artist: string       // adiciona aqui
+  duration: number
+  cloud_storage_path: string
+  cover_image_path?: string
+}
     // Generate signed URLs for each music file and cover image
     const musicsWithUrls = await Promise.all(
-      musics.map(async (music) => {
+  musics.map(async (music) => {
         const url = await getFileUrl(music.cloud_storage_path)
         const coverUrl = music.cover_image_path ? await getFileUrl(music.cover_image_path) : null
         return {
-          id: music.id,
+          id: String(music.id),
           title: music.title,
           artist: music.artist,
-          url,
-          coverUrl,
-          duration: music.duration,
+          url: url,
+          coverUrl: coverUrl,
+          duration: music.duration ?? 0,
         }
       })
     )
