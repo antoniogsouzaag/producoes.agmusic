@@ -4,26 +4,24 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getFileUrl } from '@/lib/s3'
+// 1. IMPORTA O TIPO Music GERADO PELO PRISMA
+import { Music } from '@prisma/client' 
 
 export async function GET() {
   try {
+    // Busca os dados do banco
     const musics = await prisma.music.findMany({
       orderBy: {
         createdAt: 'desc',
       },
     })
     
-    interface Music {
-  id: number
-  title: string
-  artist: string       // adiciona aqui
-  duration: number
-  cloud_storage_path: string
-  cover_image_path?: string
-}
+    // REMOVIDA A INTERFACE MANUAL
+    
     // Generate signed URLs for each music file and cover image
     const musicsWithUrls = await Promise.all(
-  musics.map(async (music) => {
+      // 2. APLICA O TIPO IMPORTADO (Music) AO PARÂMETRO 'music'
+      musics.map(async (music: Music) => {
         const url = await getFileUrl(music.cloud_storage_path)
         const coverUrl = music.cover_image_path ? await getFileUrl(music.cover_image_path) : null
         return {
