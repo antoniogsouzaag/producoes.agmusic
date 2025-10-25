@@ -1,1 +1,1 @@
-web: next start
+web: node .next/standalone/server.js
