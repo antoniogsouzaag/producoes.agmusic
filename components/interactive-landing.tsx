@@ -236,7 +236,6 @@ export default function InteractiveLanding() {
 
       {/* Hero Section */}
       <section id="home" className="hero">
-        <div className="hero-overlay"></div>
         <div className="hero-container">
           {/* Left Side - Photo */}
           <div 
@@ -313,7 +312,6 @@ export default function InteractiveLanding() {
                 priority
                 />
               </div>
-              <div className="sobre-image-overlay"></div>
             </div>
             <div className="sobre-text">
               <h2 id="titulo-sobre-mim" className="section-title">Sobre Mim</h2>
