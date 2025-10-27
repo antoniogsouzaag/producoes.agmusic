@@ -57,18 +57,33 @@ export default function Chatbot() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           message: text.trim(),
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          user_id: 'web_user_' + Date.now(),
+          source: 'website'
         })
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+
       if (!response.ok) {
-        throw new Error('Erro ao enviar mensagem')
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
-      const data = await response.json()
+      const responseText = await response.text()
+      console.log('Raw response:', responseText)
+      
+      let data
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        // Se não for JSON, use a resposta como texto
+        data = { message: responseText }
+      }
       
       // A resposta do n8n pode vir em diferentes formatos
       let botResponseText = ''
@@ -81,8 +96,12 @@ export default function Chatbot() {
         botResponseText = data.message
       } else if (data.output) {
         botResponseText = data.output
+      } else if (data.text) {
+        botResponseText = data.text
+      } else if (data.reply) {
+        botResponseText = data.reply
       } else {
-        botResponseText = JSON.stringify(data)
+        botResponseText = responseText || 'Resposta recebida com sucesso!'
       }
 
       const botMessage: Message = {

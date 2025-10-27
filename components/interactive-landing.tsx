@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import AudioPlayer from './audio-player'
 import MusicManager from './music-manager'
+import Chatbot from './chatbot'
 
 interface Music {
   id: number
@@ -563,6 +564,9 @@ export default function InteractiveLanding() {
           </div>
         </div>
       </footer>
+
+      {/* Chatbot */}
+      <Chatbot />
     </>
   )
 }

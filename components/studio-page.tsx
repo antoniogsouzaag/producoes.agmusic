@@ -8,6 +8,7 @@ import Link from 'next/link'
 export default function StudioPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrollY, setScrollY] = useState(0)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,6 +44,66 @@ export default function StudioPage() {
     setIsMenuOpen(false)
   }
 
+  const handleContactFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    try {
+      const formData = new FormData(e.currentTarget)
+      const nome = formData.get('nome') as string
+      const email = formData.get('email') as string
+      const telefone = formData.get('telefone') as string
+      const servico = formData.get('servico') as string
+      const mensagem = formData.get('mensagem') as string
+      
+      // Mapear os valores do select para textos legíveis
+      const servicoMap: { [key: string]: string } = {
+        'visita': 'Agendar Visita ao Estúdio',
+        'producao': 'Produção Musical Completa',
+        'gravacao': 'Gravação Profissional',
+        'mixagem': 'Mixagem & Masterização',
+        'instrumentos': 'Gravação de Instrumentos',
+        'edicao': 'Edição & Pós-Produção',
+        'consultoria': 'Consultoria & Mentoria',
+        'outro': 'Outro'
+      }
+      
+      const servicoTexto = servicoMap[servico] || servico
+      
+      // Enviar para API route que enviará o email
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nome,
+          email,
+          telefone,
+          servico: servicoTexto,
+          mensagem,
+          tipo: 'estudio'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao enviar mensagem')
+      }
+
+      // Limpar formulário
+      e.currentTarget.reset()
+      
+      // Feedback visual
+      alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')
+      
+    } catch (error) {
+      console.error('Erro ao enviar formulário:', error)
+      alert('Erro ao enviar mensagem. Por favor, tente novamente ou entre em contato pelo WhatsApp.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <>
       {/* Header/Navigation */}
@@ -67,6 +128,7 @@ export default function StudioPage() {
               <li><button onClick={() => scrollToElement('equipamentos')} className="nav-link">Equipamentos</button></li>
               <li><button onClick={() => scrollToElement('servicos-estudio')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('galeria')} className="nav-link">Galeria</button></li>
+              <li><button onClick={() => scrollToElement('contato-estudio')} className="nav-link">Contato</button></li>
             </ul>
             <div 
               className={`hamburger ${isMenuOpen ? 'active' : ''}`}
@@ -95,9 +157,9 @@ export default function StudioPage() {
             Equipamentos de ponta, ambiente profissional e toda estrutura para transformar suas ideias em música de qualidade
           </p>
           <div className="studio-hero-buttons">
-            <a href="https://wa.me/5564993049853" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+            <button onClick={() => scrollToElement('contato-estudio')} className="btn btn-primary">
               Agendar Visita
-            </a>
+            </button>
             <button onClick={() => scrollToElement('sobre-estudio')} className="btn btn-secondary">
               Conhecer Mais
             </button>
@@ -389,6 +451,83 @@ export default function StudioPage() {
                 height={300}
                 className="gallery-img"
               />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contato Section */}
+      <section id="contato-estudio" className="studio-contact">
+        <div className="container">
+          <h2 className="section-title">Entre em Contato</h2>
+          <div className="title-underline"></div>
+          <p className="section-subtitle">Agende sua visita ou solicite um orçamento personalizado</p>
+          
+          <div className="studio-contact-content">
+            <div className="contact-info">
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fas fa-envelope"></i>
+                </div>
+                <div>
+                  <h3>Email</h3>
+                  <a href="mailto:agmusicproducoes@gmail.com">agmusicproducoes@gmail.com</a>
+                </div>
+              </div>
+
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fab fa-whatsapp"></i>
+                </div>
+                <div>
+                  <h3>WhatsApp</h3>
+                  <a href="https://wa.me/5564993049853" target="_blank" rel="noopener noreferrer">(64) 99304-9853</a>
+                </div>
+              </div>
+
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fas fa-calendar"></i>
+                </div>
+                <div>
+                  <h3>Horário de Atendimento</h3>
+                  <p>Segunda a Sexta: 8h às 18h</p>
+                  <p>Sábado: 8h às 14h</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="contact-form">
+              <form onSubmit={handleContactFormSubmit}>
+                <div className="form-group">
+                  <input type="text" name="nome" placeholder="Seu Nome" required />
+                </div>
+                <div className="form-group">
+                  <input type="email" name="email" placeholder="Seu Email" required />
+                </div>
+                <div className="form-group">
+                  <input type="tel" name="telefone" placeholder="Seu Telefone" />
+                </div>
+                <div className="form-group">
+                  <select name="servico" required>
+                    <option value="">Selecione o serviço desejado</option>
+                    <option value="visita">Agendar Visita ao Estúdio</option>
+                    <option value="producao">Produção Musical Completa</option>
+                    <option value="gravacao">Gravação Profissional</option>
+                    <option value="mixagem">Mixagem & Masterização</option>
+                    <option value="instrumentos">Gravação de Instrumentos</option>
+                    <option value="edicao">Edição & Pós-Produção</option>
+                    <option value="consultoria">Consultoria & Mentoria</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <textarea name="mensagem" rows={5} placeholder="Conte mais sobre seu projeto ou necessidade..." required></textarea>
+                </div>
+                <button type="submit" className="btn btn-primary btn-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
+                </button>
+              </form>
             </div>
           </div>
         </div>
