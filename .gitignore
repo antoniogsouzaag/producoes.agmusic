@@ -23,3 +23,7 @@ yarn-error.log*
 
 # Database credentials (sensitive information)
 CREDENTIALS.md
+
+# Credentials file
+CREDENTIALS.md
+CREDENTIALS.pdf
