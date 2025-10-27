@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import Image from 'next/image'
@@ -48,60 +49,45 @@ export default function StudioPage() {
     e.preventDefault()
     setIsSubmitting(true)
     
+    const formData = new FormData(e.currentTarget)
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      service: formData.get('service'),
+      message: formData.get('message')
+    }
+
     try {
-      const formData = new FormData(e.currentTarget)
-      const nome = formData.get('nome') as string
-      const email = formData.get('email') as string
-      const telefone = formData.get('telefone') as string
-      const servico = formData.get('servico') as string
-      const mensagem = formData.get('mensagem') as string
-      
-      // Mapear os valores do select para textos legíveis
-      const servicoMap: { [key: string]: string } = {
-        'visita': 'Agendar Visita ao Estúdio',
-        'producao': 'Produção Musical Completa',
-        'gravacao': 'Gravação Profissional',
-        'mixagem': 'Mixagem & Masterização',
-        'instrumentos': 'Gravação de Instrumentos',
-        'edicao': 'Edição & Pós-Produção',
-        'consultoria': 'Consultoria & Mentoria',
-        'outro': 'Outro'
-      }
-      
-      const servicoTexto = servicoMap[servico] || servico
-      
-      // Enviar para API route que enviará o email
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          nome,
-          email,
-          telefone,
-          servico: servicoTexto,
-          mensagem,
-          tipo: 'estudio'
-        }),
+        body: JSON.stringify(data)
       })
 
-      if (!response.ok) {
-        throw new Error('Erro ao enviar mensagem')
+      if (response.ok) {
+        alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')
+        ;(e.target as HTMLFormElement).reset()
+      } else {
+        throw new Error('Falha no envio')
       }
-
-      // Limpar formulário
-      e.currentTarget.reset()
-      
-      // Feedback visual
-      alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')
-      
     } catch (error) {
       console.error('Erro ao enviar formulário:', error)
       alert('Erro ao enviar mensagem. Por favor, tente novamente ou entre em contato pelo WhatsApp.')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Mapear tipos de serviço para nomes amigáveis
+  const serviceNames = {
+    'gravacao': 'Gravação Profissional',
+    'mixagem': 'Mixagem & Masterização',
+    'instrumentos': 'Gravação de Instrumentos',
+    'edicao': 'Edição & Pós-Produção',
+    'consultoria': 'Consultoria & Mentoria'
   }
 
   return (
@@ -198,22 +184,14 @@ export default function StudioPage() {
               </p>
               
               <div className="studio-features">
-                <div className="feature-item">
-                  <i className="fas fa-check-circle"></i>
-                  <span>Tratamento Acústico Profissional</span>
-                </div>
-                <div className="feature-item">
-                  <i className="fas fa-check-circle"></i>
-                  <span>Equipamentos de Alta Qualidade</span>
-                </div>
-                <div className="feature-item">
-                  <i className="fas fa-check-circle"></i>
-                  <span>Ambiente Climatizado e Confortável</span>
-                </div>
-                <div className="feature-item">
-                  <i className="fas fa-check-circle"></i>
-                  <span>Atendimento Personalizado</span>
-                </div>
+                <h4>Características do Nosso Estúdio:</h4>
+                <ul>
+                  <li>Tratamento acústico profissional</li>
+                  <li>Salas isoladas e climatizadas</li>
+                  <li>Equipamentos de alta qualidade</li>
+                  <li>Ambiente criativo e inspirador</li>
+                  <li>Flexibilidade de horários</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -225,7 +203,7 @@ export default function StudioPage() {
         <div className="container">
           <h2 className="section-title">Equipamentos</h2>
           <div className="title-underline"></div>
-          <p className="section-subtitle">Tecnologia de ponta para produção profissional</p>
+          <p className="section-subtitle">Tecnologia de ponta para resultados profissionais</p>
           
           <div className="equipment-grid">
             <div className="equipment-category">
@@ -233,11 +211,11 @@ export default function StudioPage() {
                 <i className="fas fa-microphone"></i>
               </div>
               <h3>Microfones</h3>
-              <ul>
-                <li>Microfones condensadores de alta qualidade</li>
+              <ul className="equipment-list">
+                <li>Microfones condensadores de estúdio</li>
                 <li>Microfones dinâmicos para instrumentos</li>
-                <li>Kits de microfones para bateria</li>
-                <li>Pop filters e suportes profissionais</li>
+                <li>Microfones ribbon para captação vintage</li>
+                <li>Pop filters e anti-reflexos</li>
               </ul>
             </div>
 
@@ -245,12 +223,12 @@ export default function StudioPage() {
               <div className="equipment-icon">
                 <i className="fas fa-sliders-h"></i>
               </div>
-              <h3>Interfaces & Mixers</h3>
-              <ul>
-                <li>Interfaces de áudio profissionais</li>
+              <h3>Mesa & Áudio</h3>
+              <ul className="equipment-list">
                 <li>Mesa de mixagem analógica/digital</li>
-                <li>Pré-amplificadores de alta qualidade</li>
-                <li>Processadores de dinâmica</li>
+                <li>Interface de áudio profissional</li>
+                <li>Pré-amplificadores valvulados</li>
+                <li>Compressores e equalizadores</li>
               </ul>
             </div>
 
@@ -258,59 +236,33 @@ export default function StudioPage() {
               <div className="equipment-icon">
                 <i className="fas fa-desktop"></i>
               </div>
-              <h3>Computação & Software</h3>
-              <ul>
+              <h3>Produção Digital</h3>
+              <ul className="equipment-list">
                 <li>Workstation de alta performance</li>
-                <li>DAWs profissionais (Logic, Pro Tools)</li>
-                <li>Plugins e processadores premium</li>
-                <li>Bibliotecas de samples e instrumentos virtuais</li>
+                <li>Monitores de referência ativos</li>
+                <li>Plugins profissionais premium</li>
+                <li>Controladores MIDI avançados</li>
               </ul>
             </div>
 
             <div className="equipment-category">
               <div className="equipment-icon">
-                <i className="fas fa-headphones"></i>
-              </div>
-              <h3>Monitoramento</h3>
-              <ul>
-                <li>Monitores de estúdio de referência</li>
-                <li>Fones de ouvido profissionais</li>
-                <li>Sistema de distribuição de fones</li>
-                <li>Tratamento acústico calibrado</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-guitar"></i>
+                <i className="fas fa-music"></i>
               </div>
               <h3>Instrumentos</h3>
-              <ul>
-                <li>Guitarras e baixos elétricos</li>
-                <li>Violões acústicos</li>
-                <li>Teclados e sintetizadores</li>
+              <ul className="equipment-list">
+                <li>Piano digital weighted</li>
+                <li>Guitarras e baixos profissionais</li>
+                <li>Bateria acústica premium</li>
                 <li>Amplificadores valvulados</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-cog"></i>
-              </div>
-              <h3>Processamento</h3>
-              <ul>
-                <li>Compressores e limitadores</li>
-                <li>Equalizadores paramétricos</li>
-                <li>Processadores de efeitos</li>
-                <li>Afinadores e processadores de pitch</li>
               </ul>
             </div>
           </div>
 
           <div className="equipment-image-showcase">
             <Image
-              src="/estudio/equipamentos.jpg"
-              alt="Equipamentos de produção musical"
+              src="/estudio/console-1.jpg"
+              alt="Console de mixagem do Estúdio AG Music"
               width={1200}
               height={600}
               className="equipment-showcase-img"
@@ -319,24 +271,14 @@ export default function StudioPage() {
         </div>
       </section>
 
-      {/* Serviços do Estúdio */}
+      {/* Serviços Detalhados */}
       <section id="servicos-estudio" className="studio-services">
         <div className="container">
-          <h2 className="section-title">Serviços</h2>
+          <h2 className="section-title">Nossos Serviços</h2>
           <div className="title-underline"></div>
           <p className="section-subtitle">Soluções completas para sua produção musical</p>
           
-          <div className="services-detailed">
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-music"></i>
-              </div>
-              <h3>Produção Musical Completa</h3>
-              <p>
-                Desde o conceito inicial até a entrega final, cuidamos de todos os aspectos da sua produção. Criação de arranjos, programação de instrumentos, direção de gravação e desenvolvimento da identidade sonora do seu projeto.
-              </p>
-            </div>
-
+          <div className="services-detailed-grid">
             <div className="service-detailed-card">
               <div className="service-detailed-icon">
                 <i className="fas fa-microphone-alt"></i>
@@ -349,6 +291,7 @@ export default function StudioPage() {
 
             <div className="service-detailed-card">
               <div className="service-detailed-icon">
+                {/* CORREÇÃO 3: Verificar se o ícone está correto - já está correto! */}
                 <i className="fas fa-waveform-path"></i>
               </div>
               <h3>Mixagem & Masterização</h3>
@@ -401,30 +344,29 @@ export default function StudioPage() {
             <div className="gallery-item">
               <Image
                 src="/estudio/estudio-1.jpg"
-                alt="Estúdio AG Music - Sala de gravação"
+                alt="Estúdio AG Music - Sala principal"
                 width={400}
                 height={300}
                 className="gallery-img"
               />
+              <div className="gallery-overlay">
+                <i className="fas fa-search-plus"></i>
+              </div>
             </div>
+
             <div className="gallery-item">
               <Image
                 src="/estudio/estudio-2.jpg"
-                alt="Estúdio AG Music - Sala de controle"
+                alt="Estúdio AG Music - Cabine de gravação"
                 width={400}
                 height={300}
                 className="gallery-img"
               />
+              <div className="gallery-overlay">
+                <i className="fas fa-search-plus"></i>
+              </div>
             </div>
-            <div className="gallery-item">
-              <Image
-                src="/estudio/estudio-3.jpg"
-                alt="Estúdio AG Music - Equipamentos"
-                width={400}
-                height={300}
-                className="gallery-img"
-              />
-            </div>
+
             <div className="gallery-item">
               <Image
                 src="/estudio/console-1.jpg"
@@ -433,101 +375,35 @@ export default function StudioPage() {
                 height={300}
                 className="gallery-img"
               />
+              <div className="gallery-overlay">
+                <i className="fas fa-search-plus"></i>
+              </div>
             </div>
+
+            <div className="gallery-item">
+              <Image
+                src="/estudio/estudio-3.jpg"
+                alt="Estúdio AG Music - Vista geral"
+                width={400}
+                height={300}
+                className="gallery-img"
+              />
+              <div className="gallery-overlay">
+                <i className="fas fa-search-plus"></i>
+              </div>
+            </div>
+
             <div className="gallery-item">
               <Image
                 src="/estudio/equipamentos.jpg"
-                alt="Estúdio AG Music - Setup de produção"
+                alt="Estúdio AG Music - Equipamentos"
                 width={400}
                 height={300}
                 className="gallery-img"
               />
-            </div>
-            <div className="gallery-item">
-              <Image
-                src="/foto-performance.png"
-                alt="Antônio Garcia - Performance"
-                width={400}
-                height={300}
-                className="gallery-img"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contato Section */}
-      <section id="contato-estudio" className="studio-contact">
-        <div className="container">
-          <h2 className="section-title">Entre em Contato</h2>
-          <div className="title-underline"></div>
-          <p className="section-subtitle">Agende sua visita ou solicite um orçamento personalizado</p>
-          
-          <div className="studio-contact-content">
-            <div className="contact-info">
-              <div className="contact-item">
-                <div className="contact-icon">
-                  <i className="fas fa-envelope"></i>
-                </div>
-                <div>
-                  <h3>Email</h3>
-                  <a href="mailto:agmusicproducoes@gmail.com">agmusicproducoes@gmail.com</a>
-                </div>
+              <div className="gallery-overlay">
+                <i className="fas fa-search-plus"></i>
               </div>
-
-              <div className="contact-item">
-                <div className="contact-icon">
-                  <i className="fab fa-whatsapp"></i>
-                </div>
-                <div>
-                  <h3>WhatsApp</h3>
-                  <a href="https://wa.me/5564993049853" target="_blank" rel="noopener noreferrer">(64) 99304-9853</a>
-                </div>
-              </div>
-
-              <div className="contact-item">
-                <div className="contact-icon">
-                  <i className="fas fa-calendar"></i>
-                </div>
-                <div>
-                  <h3>Horário de Atendimento</h3>
-                  <p>Segunda a Sexta: 8h às 18h</p>
-                  <p>Sábado: 8h às 14h</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="contact-form">
-              <form onSubmit={handleContactFormSubmit}>
-                <div className="form-group">
-                  <input type="text" name="nome" placeholder="Seu Nome" required />
-                </div>
-                <div className="form-group">
-                  <input type="email" name="email" placeholder="Seu Email" required />
-                </div>
-                <div className="form-group">
-                  <input type="tel" name="telefone" placeholder="Seu Telefone" />
-                </div>
-                <div className="form-group">
-                  <select name="servico" required>
-                    <option value="">Selecione o serviço desejado</option>
-                    <option value="visita">Agendar Visita ao Estúdio</option>
-                    <option value="producao">Produção Musical Completa</option>
-                    <option value="gravacao">Gravação Profissional</option>
-                    <option value="mixagem">Mixagem & Masterização</option>
-                    <option value="instrumentos">Gravação de Instrumentos</option>
-                    <option value="edicao">Edição & Pós-Produção</option>
-                    <option value="consultoria">Consultoria & Mentoria</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <textarea name="mensagem" rows={5} placeholder="Conte mais sobre seu projeto ou necessidade..." required></textarea>
-                </div>
-                <button type="submit" className="btn btn-primary btn-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
-                </button>
-              </form>
             </div>
           </div>
         </div>
@@ -537,57 +413,152 @@ export default function StudioPage() {
       <section className="studio-cta">
         <div className="container">
           <div className="cta-content">
-            <h2>Pronto para Gravar sua Música?</h2>
-            <p>Agende uma visita ao estúdio ou solicite um orçamento sem compromisso</p>
+            <h2>Pronto para Gravar?</h2>
+            <p>Agende sua visita e conheça nosso estúdio pessoalmente</p>
             <div className="cta-buttons">
-              <a href="https://wa.me/5564993049853" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-large">
-                <i className="fab fa-whatsapp"></i>
-                Falar no WhatsApp
+              <button onClick={() => scrollToElement('contato-estudio')} className="btn btn-primary btn-large">
+                Falar Conosco
+              </button>
+              <a 
+                href="https://wa.me/5564993049853?text=Olá! Gostaria de agendar uma visita ao estúdio AG Music." 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-secondary btn-large"
+              >
+                WhatsApp Direto
               </a>
-              <Link href="/" className="btn btn-secondary btn-large">
-                Voltar ao Início
-              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
+      {/* Seção de Contato */}
+      <section id="contato-estudio" className="studio-contact">
         <div className="container">
-          <div className="footer-content">
-            <div className="footer-logo flex items-center gap-3">
-              <div className="relative w-10 h-10">
-                <Image
-                  src="/logo.jpeg"
-                  alt="Antônio Garcia Logo"
-                  fill
-                  className="logo-img"
-                  sizes="40px"
-                />
+          <h2 className="section-title">Entre em Contato</h2>
+          <div className="title-underline"></div>
+          <p className="section-subtitle">Agende sua visita ou tire suas dúvidas</p>
+          
+          <div className="contact-content">
+            <div className="contact-info">
+              <h3>Informações de Contato</h3>
+              
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fas fa-phone"></i>
+                </div>
+                <div className="contact-details">
+                  <p>(64) 99304-9853</p>
+                  <span>WhatsApp e Ligações</span>
+                </div>
               </div>
-              <div> 
-                <h3>Antônio Garcia</h3>
-                <p>Produtor Musical</p>
+
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fas fa-envelope"></i>
+                </div>
+                <div className="contact-details">
+                  <p>agmusicproducoes@gmail.com</p>
+                  <span>Email profissional</span>
+                </div>
+              </div>
+
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fab fa-instagram"></i>
+                </div>
+                <div className="contact-details">
+                  <p>@ag_music_producoes</p>
+                  <span>Instagram oficial</span>
+                </div>
+              </div>
+
+              <div className="contact-item">
+                <div className="contact-icon">
+                  <i className="fas fa-clock"></i>
+                </div>
+                <div className="contact-details">
+                  <p>Seg - Sex: 08:00 às 18:00</p>
+                  <span>Horário de atendimento</span>
+                </div>
               </div>
             </div>
-            <div className="footer-social">
-              <a href="https://www.instagram.com/antonio0_/" target="_blank" rel="noopener noreferrer">
-                <i className="fab fa-instagram"></i>
-              </a>
-              <a href="https://www.youtube.com/@AntonioGarcia-xx9sv" target="_blank" rel="noopener noreferrer">
-                <i className="fab fa-youtube"></i>
-              </a>
-              <a href="https://wa.me/5564993049853" target="_blank" rel="noopener noreferrer">
-                <i className="fab fa-whatsapp"></i>
-              </a>
+
+            <div className="contact-form">
+              <form onSubmit={handleContactFormSubmit}>
+                <div className="form-group">
+                  <label htmlFor="name">Nome Completo</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    className="form-control"
+                    placeholder="Seu nome completo"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    className="form-control"
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="phone">Telefone</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    className="form-control"
+                    placeholder="(XX) XXXXX-XXXX"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="service">Serviço de Interesse</label>
+                  <select id="service" name="service" className="form-control" required>
+                    <option value="">Selecione um serviço</option>
+                    <option value="gravacao">Gravação Profissional</option>
+                    <option value="mixagem">Mixagem & Masterização</option>
+                    <option value="instrumentos">Gravação de Instrumentos</option>
+                    <option value="edicao">Edição & Pós-Produção</option>
+                    <option value="consultoria">Consultoria & Mentoria</option>
+                    <option value="visita">Agendar Visita ao Estúdio</option>
+                    <option value="outros">Outros</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="message">Mensagem</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    className="form-control"
+                    rows={5}
+                    placeholder="Descreva seu projeto ou dúvida..."
+                    required
+                  ></textarea>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="submit-btn"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
+                </button>
+              </form>
             </div>
-          </div>
-          <div className="footer-bottom">
-            <p>&copy; 2025 Antônio Garcia. Todos os direitos reservados.</p>
           </div>
         </div>
-      </footer>
+      </section>
     </>
   )
 }

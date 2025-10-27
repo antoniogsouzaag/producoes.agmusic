@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -53,19 +54,30 @@ export default function Chatbot() {
     setIsLoading(true)
 
     try {
+      // CORREÇÃO 2: Melhorar integração do chatbot com timeout e headers adicionais
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 segundos timeout
+
       const response = await fetch('https://webhook.agmusic.cloud/webhook/botagmusic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'User-Agent': 'AG-Music-Website/1.0',
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
           message: text.trim(),
           timestamp: new Date().toISOString(),
           user_id: 'web_user_' + Date.now(),
-          source: 'website'
-        })
+          source: 'website',
+          session_id: 'session_' + Date.now(),
+          user_agent: navigator.userAgent || 'Unknown'
+        }),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       console.log('Response status:', response.status)
       console.log('Response headers:', response.headers)
@@ -78,30 +90,47 @@ export default function Chatbot() {
       console.log('Raw response:', responseText)
       
       let data
-      try {
-        data = JSON.parse(responseText)
-      } catch {
-        // Se não for JSON, use a resposta como texto
-        data = { message: responseText }
-      }
-      
-      // A resposta do n8n pode vir em diferentes formatos
       let botResponseText = ''
       
-      if (typeof data === 'string') {
-        botResponseText = data
-      } else if (data.response) {
-        botResponseText = data.response
-      } else if (data.message) {
-        botResponseText = data.message
-      } else if (data.output) {
-        botResponseText = data.output
-      } else if (data.text) {
-        botResponseText = data.text
-      } else if (data.reply) {
-        botResponseText = data.reply
-      } else {
-        botResponseText = responseText || 'Resposta recebida com sucesso!'
+      try {
+        data = JSON.parse(responseText)
+        console.log('Parsed JSON data:', data)
+      } catch (parseError) {
+        console.log('Response is not JSON, using as plain text')
+        // Se não for JSON válido, use a resposta como texto direto
+        botResponseText = responseText.trim() || 'Resposta recebida com sucesso!'
+      }
+      
+      // Se conseguiu parsear como JSON, extraia a mensagem
+      if (data && !botResponseText) {
+        if (typeof data === 'string') {
+          botResponseText = data
+        } else if (data.response) {
+          botResponseText = data.response
+        } else if (data.message) {
+          botResponseText = data.message
+        } else if (data.output) {
+          botResponseText = data.output
+        } else if (data.text) {
+          botResponseText = data.text
+        } else if (data.reply) {
+          botResponseText = data.reply
+        } else if (data.content) {
+          botResponseText = data.content
+        } else if (data.data && data.data.message) {
+          botResponseText = data.data.message
+        } else if (Array.isArray(data) && data.length > 0) {
+          botResponseText = data[0].message || data[0].text || data[0].content || JSON.stringify(data[0])
+        } else {
+          // Se não encontrar um campo conhecido, use a primeira propriedade string
+          const firstStringValue = Object.values(data).find(val => typeof val === 'string')
+          botResponseText = firstStringValue as string || JSON.stringify(data) || 'Resposta recebida!'
+        }
+      }
+
+      // Garantir que temos uma resposta válida
+      if (!botResponseText || botResponseText.length === 0) {
+        botResponseText = 'Recebi sua mensagem! Como posso ajudar mais?'
       }
 
       const botMessage: Message = {
@@ -112,12 +141,25 @@ export default function Chatbot() {
       }
 
       setMessages(prev => [...prev, botMessage])
+      
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error)
+      console.error('Erro detalhado ao enviar mensagem:', error)
+      
+      let errorText = 'Desculpe, ocorreu um erro ao processar sua mensagem.'
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorText = 'A conexão demorou muito para responder. Tente novamente.'
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          errorText = 'Problema de conexão. Verifique sua internet e tente novamente.'
+        }
+      }
+      
+      errorText += ' Por favor, entre em contato pelo WhatsApp: (64) 99304-9853'
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente ou entre em contato pelo WhatsApp: (64) 99304-9853',
+        text: errorText,
         sender: 'bot',
         timestamp: new Date()
       }
