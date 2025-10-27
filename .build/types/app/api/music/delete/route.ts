@@ -1,4 +1,4 @@
-// File: /home/ubuntu/antonio_garcia_landing/nextjs_space/app/api/music/delete/route.ts
+// File: /home/ubuntu/code_artifacts/producoes.agmusic/app/api/music/delete/route.ts
 import * as entry from '../../../../../../app/api/music/delete/route.js'
 import type { NextRequest } from 'next/server.js'
 
