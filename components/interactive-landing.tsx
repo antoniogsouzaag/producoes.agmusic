@@ -357,42 +357,42 @@ export default function InteractiveLanding() {
 
             <div className="servico-card">
               <div className="servico-icon">
-                <i className="fas fa-guitar"></i>
+                <i className="fas fa-microphone-alt"></i>
               </div>
-              <h3>Gravação de Instrumentos</h3>
-              <p>Gravação profissional de instrumentos com equipamentos de alta qualidade e acústica tratada.</p>
-            </div>
-
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-cut"></i>
-              </div>
-              <h3>Edição</h3>
-              <p>Edição precisa de áudio, correção de timing, afinação e limpeza de ruídos indesejados.</p>
+              <h3>Gravação Profissional</h3>
+              <p>Gravação de voz e instrumentos em estúdio com equipamentos de alta qualidade e acústica tratada.</p>
             </div>
 
             <div className="servico-card">
               <div className="servico-icon">
                 <i className="fas fa-sliders-h"></i>
               </div>
-              <h3>Mixagem</h3>
-              <p>Balanceamento e processamento de todas as faixas para criar uma mixagem coesa e profissional.</p>
+              <h3>Mixagem & Masterização</h3>
+              <p>Balanceamento profissional e finalização da sua música para streaming, rádio e outras plataformas.</p>
             </div>
 
             <div className="servico-card">
               <div className="servico-icon">
-                <i className="fas fa-compact-disc"></i>
+                <i className="fas fa-cut"></i>
               </div>
-              <h3>Masterização</h3>
-              <p>Finalização profissional da sua música, preparada para todas as plataformas de streaming e rádio.</p>
+              <h3>Edição & Pós-Produção</h3>
+              <p>Edição precisa de áudio, correção de timing, afinação e limpeza de ruídos indesejados.</p>
             </div>
 
             <div className="servico-card">
               <div className="servico-icon">
-                <i className="fas fa-headphones"></i>
+                <i className="fas fa-guitar"></i>
               </div>
-              <h3>Consultoria</h3>
-              <p>Orientação completa sobre seu projeto, desde a pré-produção até o lançamento.</p>
+              <h3>Gravação de Instrumentos</h3>
+              <p>Sessões com músicos profissionais para complementar seu projeto com performances de alta qualidade.</p>
+            </div>
+
+            <div className="servico-card">
+              <div className="servico-icon">
+                <i className="fas fa-chalkboard-teacher"></i>
+              </div>
+              <h3>Consultoria Musical</h3>
+              <p>Orientação completa sobre produção, desde a pré-produção até estratégias de lançamento.</p>
             </div>
           </div>
         </div>

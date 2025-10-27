@@ -257,6 +257,32 @@ export default function StudioPage() {
                 <li>Amplificadores valvulados</li>
               </ul>
             </div>
+
+            <div className="equipment-category">
+              <div className="equipment-icon">
+                <i className="fas fa-volume-up"></i>
+              </div>
+              <h3>Amplificação</h3>
+              <ul className="equipment-list">
+                <li>Amplificadores valvulados premium</li>
+                <li>Monitores de estúdio de referência</li>
+                <li>Subwoofers para graves precisos</li>
+                <li>Sistemas de fones profissionais</li>
+              </ul>
+            </div>
+
+            <div className="equipment-category">
+              <div className="equipment-icon">
+                <i className="fas fa-cogs"></i>
+              </div>
+              <h3>Processamento</h3>
+              <ul className="equipment-list">
+                <li>Compressores analógicos vintage</li>
+                <li>Equalizadores paramétricos</li>
+                <li>Reverbs e delays premium</li>
+                <li>Gates e expansores dinâmicos</li>
+              </ul>
+            </div>
           </div>
 
           <div className="equipment-image-showcase">
@@ -291,8 +317,7 @@ export default function StudioPage() {
 
             <div className="service-detailed-card">
               <div className="service-detailed-icon">
-                {/* CORREÇÃO 3: Verificar se o ícone está correto - já está correto! */}
-                <i className="fas fa-waveform-path"></i>
+                <i className="fas fa-sliders-h"></i>
               </div>
               <h3>Mixagem & Masterização</h3>
               <p>
@@ -405,6 +430,19 @@ export default function StudioPage() {
                 <i className="fas fa-search-plus"></i>
               </div>
             </div>
+
+            <div className="gallery-item">
+              <Image
+                src="https://thumbs.dreamstime.com/b/modern-music-studio-vibrant-led-lighting-professional-sound-equipment-recording-sessions-spacious-equipped-console-338568094.jpg"
+                alt="Estúdio AG Music - Sala de gravação moderna"
+                width={400}
+                height={300}
+                className="gallery-img"
+              />
+              <div className="gallery-overlay">
+                <i className="fas fa-search-plus"></i>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -417,16 +455,11 @@ export default function StudioPage() {
             <p>Agende sua visita e conheça nosso estúdio pessoalmente</p>
             <div className="cta-buttons">
               <button onClick={() => scrollToElement('contato-estudio')} className="btn btn-primary btn-large">
-                Falar Conosco
+                Solicitar Orçamento
               </button>
-              <a 
-                href="https://wa.me/5564993049853?text=Olá! Gostaria de agendar uma visita ao estúdio AG Music." 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="btn btn-secondary btn-large"
-              >
-                WhatsApp Direto
-              </a>
+              <button onClick={() => scrollToElement('galeria')} className="btn btn-secondary btn-large">
+                Ver Galeria
+              </button>
             </div>
           </div>
         </div>
@@ -559,6 +592,43 @@ export default function StudioPage() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-logo flex items-center gap-3">
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/logo.jpeg"
+                  alt="Antônio Garcia Logo"
+                  fill
+                  className="logo-img"
+                  sizes="40px"
+                />
+              </div>
+              <div>
+                <h3>Estúdio AG Music</h3>
+                <p>Produção Musical Profissional</p>
+              </div>
+            </div>
+            <div className="footer-social">
+              <a href="https://www.instagram.com/antonio0_/" target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-instagram"></i>
+              </a>
+              <a href="https://www.youtube.com/@AntonioGarcia-xx9sv" target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-youtube"></i>
+              </a>
+              <a href="https://wa.me/5564993049853" target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2025 Estúdio AG Music - Antônio Garcia. Todos os direitos reservados.</p>
+          </div>
+        </div>
+      </footer>
     </>
   )
 }
