@@ -20,3 +20,6 @@ yarn-error.log*
 
 # Se você estiver usando Vercel/Next
 .vercel
+
+# Database credentials (sensitive information)
+CREDENTIALS.md
