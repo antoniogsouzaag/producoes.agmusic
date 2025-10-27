@@ -1,1 +1,1 @@
-web: node .next/standalone/server.js
+web: node ${NEXT_DIST_DIR:-.next}/standalone/server.js
