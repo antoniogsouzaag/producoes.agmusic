@@ -218,6 +218,7 @@ export default function InteractiveLanding() {
               <li><button onClick={() => scrollToElement('sobre')} className="nav-link">Sobre</button></li>
               <li><button onClick={() => scrollToElement('servicos')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('portfolio')} className="nav-link">Portfólio</button></li>
+              <li><a href="/estudio" className="nav-link">Estúdio</a></li>
               <li><button onClick={() => scrollToElement('contato')} className="nav-link">Contato</button></li>
             </ul>
             <div 

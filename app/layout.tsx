@@ -2,6 +2,7 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
+import Chatbot from '../components/chatbot'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body className={inter.className}>
         {children}
 
+        <Chatbot />
         <div id="modal-root" />
       </body>
     </html>
