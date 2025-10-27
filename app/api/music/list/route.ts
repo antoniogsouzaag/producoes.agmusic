@@ -46,9 +46,21 @@ export async function GET() {
     
     return NextResponse.json({ musics: musicsWithUrls })
   } catch (error) {
-    console.error('List error:', error)
+    console.error('Database connection error:', error)
+    
+    // Check if it's a database connection error
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as any
+      if (prismaError.code === 'P1001' || prismaError.code === 'ENOTFOUND' || prismaError.code === 'ETIMEDOUT') {
+        return NextResponse.json({
+          error: 'Sistema temporariamente indisponível. Por favor, tente novamente em alguns minutos.',
+          musics: [] // Return empty array so the UI can still render
+        })
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Erro ao listar músicas' },
+      { error: 'Erro temporário ao carregar músicas. Tente novamente.', musics: [] },
       { status: 500 }
     )
   }

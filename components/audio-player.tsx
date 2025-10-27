@@ -104,10 +104,14 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     return (
       <div className="portfolio-player">
         <i className="fas fa-music"></i>
-        <p>Nenhuma música adicionada ainda</p>
+        <h3>Portfólio Musical</h3>
+        <p>Adicione suas primeiras músicas para criar um portfólio incrível!</p>
+        <p className="text-sm opacity-75">
+          Use o botão "Adicionar Música" acima para fazer upload de suas produções musicais.
+        </p>
         {onRefresh && (
           <button onClick={onRefresh} className="btn btn-primary" style={{ marginTop: '1rem' }}>
-            Atualizar Lista
+            <i className="fas fa-sync-alt"></i> Atualizar Lista
           </button>
         )}
       </div>

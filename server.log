@@ -1,20 +1,55 @@
 
-> start
-> next start -p ${PORT:-3000}
+> dev
+> next dev
 
- ⨯ Failed to start server
-Error: listen EADDRINUSE: address already in use :::3000
-    at Server.setupListenHandle [as _listen2] (node:net:1937:16)
-    at listenInCluster (node:net:1994:12)
-    at Server.listen (node:net:2099:7)
-    at /home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/lib/start-server.js:280:16
-    at new Promise (<anonymous>)
-    at startServer (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/lib/start-server.js:191:11)
-    at Module.nextStart (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/cli/next-start.js:25:40)
-    at /home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/bin/next:105:856 {
-  code: 'EADDRINUSE',
-  errno: -98,
-  syscall: 'listen',
-  address: '::',
-  port: 3000
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.2s
+ ○ Compiling / ...
+ ✓ Compiled / in 2.6s (506 modules)
+ HEAD / 200 in 2832ms
+ ✓ Compiled in 396ms (261 modules)
+ ○ Compiling /api/music/list ...
+ ✓ Compiled /api/music/list in 1028ms (682 modules)
+Database connection error: PrismaClientInitializationError: 
+Invalid `prisma.music.findMany()` invocation:
+
+
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:8
+   | 
+ 7 |   provider = "postgresql"
+ 8 |   url      = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at zn.handleRequestError (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/@prisma/client/runtime/library.js:121:7759)
+    at zn.handleAndLogRequestError (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/@prisma/client/runtime/library.js:121:6784)
+    at zn.request (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/@prisma/client/runtime/library.js:121:6491)
+    at async l (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/@prisma/client/runtime/library.js:130:9778)
+    at async GET (webpack-internal:///(rsc)/./app/api/music/list/route.ts:24:24)
+    at async /home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:57228
+    at async eT.execute (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:46851)
+    at async eT.handle (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:58760)
+    at async doRender (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:1496:28)
+    at async DevServer.renderPageComponent (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/base-server.js:818:17)
+    at async /home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/lib/router-server.js:178:21)
+    at async handleRequest (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/lib/router-server.js:355:24)
+    at async requestHandlerImpl (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/lib/router-server.js:379:13)
+    at async Server.requestListener (/home/ubuntu/code_artifacts/producoes.agmusic/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  clientVersion: '6.7.0',
+  errorCode: undefined,
+  retryable: undefined
 }
+ GET /api/music/list 500 in 1552ms

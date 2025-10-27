@@ -28,8 +28,14 @@ export default function InteractiveLanding() {
       const response = await fetch('/api/music/list')
       const data = await response.json()
       setMusics(data.musics || [])
+      
+      // Show friendly error message if database is unavailable
+      if (data.error && data.musics?.length === 0) {
+        console.warn('Database temporarily unavailable:', data.error)
+      }
     } catch (error) {
       console.error('Error loading musics:', error)
+      setMusics([]) // Ensure empty array for fallback UI
     } finally {
       setIsLoadingMusics(false)
     }

@@ -354,6 +354,16 @@ export default function StudioPage() {
                 Orientação completa sobre produção musical, desde a pré-produção até estratégias de lançamento. Mentoria para produtores iniciantes e artistas que querem entender melhor o processo de produção.
               </p>
             </div>
+
+            <div className="service-detailed-card">
+              <div className="service-detailed-icon">
+                <i className="fas fa-compact-disc"></i>
+              </div>
+              <h3>Produção Completa</h3>
+              <p>
+                Pacote completo de produção musical: desde o arranjo inicial, gravação, edição, mixagem até a masterização final. Ideal para artistas que querem um produto profissional pronto para distribuição.
+              </p>
+            </div>
           </div>
         </div>
       </section>
