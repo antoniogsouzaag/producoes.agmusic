@@ -33,18 +33,30 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
     const handleDurationChange = () => setDuration(audio.duration)
-    const handleEnded = () => handleNext()
+    const handleEnded = () => {
+      if (currentMusicIndex < musics.length - 1) {
+        setCurrentMusicIndex(currentMusicIndex + 1)
+        setIsPlaying(true)
+      } else {
+        setIsPlaying(false)
+      }
+    }
 
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('durationchange', handleDurationChange)
     audio.addEventListener('ended', handleEnded)
+
+    // Auto-play when track changes
+    if (isPlaying) {
+      audio.play().catch(err => console.log('Playback error:', err))
+    }
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.removeEventListener('durationchange', handleDurationChange)
       audio.removeEventListener('ended', handleEnded)
     }
-  }, [currentMusicIndex])
+  }, [currentMusicIndex, isPlaying, musics.length])
 
   useEffect(() => {
     if (audioRef.current) {
@@ -123,15 +135,19 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       <audio ref={audioRef} src={currentMusic?.url} />
       
       {/* Cover Image */}
-      {currentMusic?.coverUrl && (
-        <div className="player-cover-container">
+      <div className="player-cover-container">
+        {currentMusic?.coverUrl ? (
           <img 
             src={currentMusic.coverUrl} 
             alt={`Capa de ${currentMusic.title}`}
             className="player-cover-image"
           />
-        </div>
-      )}
+        ) : (
+          <div className="default-cover">
+            <i className="fas fa-music"></i>
+          </div>
+        )}
+      </div>
       
       {/* Current Track Info */}
       <div className="player-track-info">
