@@ -23,6 +23,8 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const currentMusic = musics[currentMusicIndex]
@@ -32,7 +34,10 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     if (!audio) return
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
-    const handleDurationChange = () => setDuration(audio.duration)
+    const handleDurationChange = () => {
+      setDuration(audio.duration)
+      setIsLoading(false)
+    }
     const handleEnded = () => {
       if (currentMusicIndex < musics.length - 1) {
         setCurrentMusicIndex(currentMusicIndex + 1)
@@ -41,20 +46,43 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         setIsPlaying(false)
       }
     }
+    const handleLoadStart = () => {
+      setIsLoading(true)
+      setError(null)
+    }
+    const handleCanPlay = () => {
+      setIsLoading(false)
+      setError(null)
+    }
+    const handleError = () => {
+      setIsLoading(false)
+      setError('Erro ao carregar o áudio. A URL pode ter expirado. Tente atualizar a lista.')
+      setIsPlaying(false)
+    }
 
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('durationchange', handleDurationChange)
     audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('loadstart', handleLoadStart)
+    audio.addEventListener('canplay', handleCanPlay)
+    audio.addEventListener('error', handleError)
 
     // Auto-play when track changes
     if (isPlaying) {
-      audio.play().catch(err => console.log('Playback error:', err))
+      audio.play().catch(err => {
+        console.log('Playback error:', err)
+        setError('Erro ao reproduzir o áudio. Tente novamente.')
+        setIsPlaying(false)
+      })
     }
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.removeEventListener('durationchange', handleDurationChange)
       audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('loadstart', handleLoadStart)
+      audio.removeEventListener('canplay', handleCanPlay)
+      audio.removeEventListener('error', handleError)
     }
   }, [currentMusicIndex, isPlaying, musics.length])
 
@@ -147,12 +175,22 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
             <i className="fas fa-music"></i>
           </div>
         )}
+        {isLoading && (
+          <div className="player-loading-overlay">
+            <i className="fas fa-spinner fa-spin"></i>
+          </div>
+        )}
       </div>
       
       {/* Current Track Info */}
       <div className="player-track-info">
         <div className="track-title">{currentMusic?.title}</div>
         <div className="track-artist">{currentMusic?.artist}</div>
+        {error && (
+          <div className="player-error" style={{ color: '#ff4444', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+            <i className="fas fa-exclamation-circle"></i> {error}
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
