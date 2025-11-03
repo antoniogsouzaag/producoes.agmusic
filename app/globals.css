@@ -128,6 +128,97 @@ body {
   height: 3px;
   background: var(--primary-color);
   transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(7px, 7px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+  .navbar .container {
+    padding: 0.8rem 15px;
+  }
+
+  .logo-text {
+    font-size: 1.3rem;
+  }
+
+  .hamburger {
+    display: flex;
+    z-index: 1001;
+  }
+
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: rgba(10, 10, 10, 0.98);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .nav-menu.active {
+    right: 0;
+  }
+
+  .nav-menu li {
+    width: 100%;
+    text-align: center;
+    opacity: 0;
+    transform: translateX(50px);
+    animation: slideInRight 0.4s ease forwards;
+  }
+
+  .nav-menu.active li:nth-child(1) { animation-delay: 0.1s; }
+  .nav-menu.active li:nth-child(2) { animation-delay: 0.15s; }
+  .nav-menu.active li:nth-child(3) { animation-delay: 0.2s; }
+  .nav-menu.active li:nth-child(4) { animation-delay: 0.25s; }
+  .nav-menu.active li:nth-child(5) { animation-delay: 0.3s; }
+  .nav-menu.active li:nth-child(6) { animation-delay: 0.35s; }
+
+  .nav-link {
+    display: block;
+    padding: 1rem;
+    font-size: 1.1rem;
+    width: 100%;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-link:hover {
+    background: rgba(255, 0, 128, 0.1);
+    transform: translateX(5px);
+  }
+
+  .nav-link::after {
+    display: none;
+  }
+}
+
+@keyframes slideInRight {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Hero Section */
@@ -448,29 +539,38 @@ body {
 
 /* Responsive Hero */
 @media (max-width: 768px) {
+  .hero {
+    min-height: auto;
+    padding: 80px 0 40px;
+  }
+
   .hero-container {
     grid-template-columns: 1fr;
     gap: 2rem;
-    padding: 0 20px;
+    padding: 0 15px;
   }
 
   .hero-photo {
     order: 1;
-    height: 70vh;
-    min-height: 450px;
+    height: 50vh;
+    min-height: 350px;
+    max-height: 450px;
   }
 
-
+  .hero-photo-frame {
+    border-radius: 20px;
+  }
 
   .hero-content {
-    padding-left: 1rem;
-    text-align: left;
+    order: 2;
+    padding: 0;
+    text-align: center;
   }
 
   .hero-brand {
-    font-size: 2rem;
-    line-height: 1.1;
-    margin-bottom: 0.3rem;
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
   }
 
   .hero-name {
@@ -799,58 +899,68 @@ body {
   }
 
   .sobre .container {
-    padding: 0 20px;
+    padding: 0 15px;
   }
 
   .sobre-content {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 
   .sobre-image {
-    height: 70vh;
-    min-height: 450px;
+    height: 55vh;
+    min-height: 380px;
+    max-height: 500px;
   }
-  
 
-  
-  .sobre-image img {
-    height: 100%;
+  .sobre-image-frame {
+    border-radius: 20px;
   }
 
   .sobre-text {
-    padding: 1rem 0 1rem 1rem;
+    padding: 0 10px;
+    text-align: center;
   }
 
   .sobre-text .section-title {
-    font-size: 1.6rem;
-  }
-
-  .sobre-text p {
-    font-size: 0.8rem;
-    line-height: 1.6;
+    font-size: 2rem;
+    text-align: center;
     margin-bottom: 1rem;
   }
 
+  .sobre-text .title-underline {
+    margin: 0 auto 1.5rem;
+  }
+
+  .sobre-text p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+    text-align: left;
+  }
+
   .sobre-stats {
-    gap: 0.4rem;
-    margin-top: 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: center;
   }
 
   .stat-item {
-    padding: 0.5rem 0.7rem;
-    max-width: 70px;
+    padding: 1rem 0.8rem;
+    min-width: auto;
   }
 
   .stat-number {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
 
   .stat-label {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
 
-  /* Serviços Mobile */
+  /* Serviços Section Mobile */
   .servicos {
     padding: 60px 0;
   }
@@ -858,16 +968,48 @@ body {
   .servicos-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    padding: 0 10px;
   }
 
   .servico-card {
     padding: 2rem 1.5rem;
-    margin: 0 10px;
   }
 
   .servico-icon {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .servico-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .servico-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Gêneros Section Mobile */
+  .generos {
+    padding: 50px 0;
+  }
+
+  .generos-list {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    justify-content: center;
+    padding: 0 15px;
+  }
+
+  .genero-tag {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .servico-card h2 {
     font-size: 1.5rem;
   }
 
@@ -885,19 +1027,165 @@ body {
   }
 
   .genero-tag {
-    padding: 0.6rem 1.5rem;
-    font-size: 0.9rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
   }
 
-  /* Portfolio Mobile */
+  /* Portfolio Section Mobile */
   .portfolio {
     padding: 60px 0;
   }
 
   .portfolio-content {
-    padding: 0 10px;
+    margin-top: 2rem;
   }
 
+  .portfolio-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 15px;
+  }
+
+  .portfolio-link {
+    width: 100%;
+    justify-content: center;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+  }
+
+  .portfolio-link i {
+    font-size: 1.3rem;
+  }
+
+  .portfolio-link span {
+    font-size: 1rem;
+  }
+
+  /* Contato Section Mobile */
+  .contato {
+    padding: 60px 0;
+  }
+
+  .contato-content {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin-top: 2rem;
+  }
+
+  .contato-info {
+    padding: 0;
+  }
+
+  .contato-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    margin-bottom: 1.8rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+  }
+
+  .contato-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.3rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .contato-item div h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .contato-item div a,
+  .contato-item div p {
+    font-size: 0.9rem;
+  }
+
+  .contato-form {
+    padding: 2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 14px 15px;
+    font-size: 1rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 8px;
+    color: inherit;
+  }
+
+  .form-group textarea {
+    min-height: 120px;
+  }
+
+  .btn-full {
+    padding: 14px 30px;
+    font-size: 1rem;
+  }
+
+  /* Footer Mobile */
+  .footer {
+    padding: 2.5rem 0 1rem;
+  }
+
+  .footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+    align-items: center;
+  }
+
+  .footer-logo h3 {
+    font-size: 1.2rem;
+  }
+
+  .footer-logo p {
+    font-size: 0.85rem;
+  }
+
+  .footer-social {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .footer-social a {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .footer-bottom p {
+    font-size: 0.85rem;
+    padding: 0 15px;
+  }
+
+  /* Admin controls (keep full-width behavior on mobile) */
   .admin-controls {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -962,16 +1250,248 @@ body {
   .contato-form {
     padding: 2rem;
   }
+}
 
-  /* Footer Mobile */
-  .footer-content {
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
+/* Media Query para Celulares Pequenos (até 480px) */
+@media (max-width: 480px) {
+  /* Hero Section - Celulares Pequenos */
+  .hero {
+    padding: 70px 0 30px;
   }
 
-  .footer-logo {
-    align-items: center;
+  .hero-container {
+    gap: 1.5rem;
+    padding: 0 10px;
+  }
+
+  .hero-photo {
+    height: 45vh;
+    min-height: 300px;
+    max-height: 380px;
+  }
+
+  .hero-brand {
+    font-size: 2rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero-name {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+    padding: 0 5px;
+  }
+
+  .hero-buttons .btn {
+    padding: 12px 25px;
+    font-size: 0.9rem;
+  }
+
+  .social-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  /* Sobre Section - Celulares Pequenos */
+  .sobre {
+    padding: 50px 0 !important;
+  }
+
+  .sobre-image {
+    height: 45vh;
+    min-height: 320px;
+    max-height: 400px;
+  }
+
+  .sobre-text .section-title {
+    font-size: 1.6rem;
+  }
+
+  .sobre-text p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .sobre-stats {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .stat-item {
+    padding: 0.8rem 1rem;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  /* Serviços - Celulares Pequenos */
+  .servicos {
+    padding: 50px 0;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .servico-card {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .servico-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .servico-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .servico-card p {
+    font-size: 0.85rem;
+  }
+
+  /* Gêneros - Celulares Pequenos */
+  .generos {
+    padding: 40px 0;
+  }
+
+  .genero-tag {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+  }
+
+  /* Portfolio - Celulares Pequenos */
+  .portfolio {
+    padding: 50px 0;
+  }
+
+  .portfolio-link {
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+  }
+
+  .portfolio-link i {
+    font-size: 1.2rem;
+  }
+
+  /* Contato - Celulares Pequenos */
+  .contato {
+    padding: 50px 0;
+  }
+
+  .contato-form {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 12px 12px;
+    font-size: 0.95rem;
+  }
+
+  .btn-full {
+    padding: 12px 25px;
+    font-size: 0.95rem;
+  }
+
+  /* Footer - Celulares Pequenos */
+  .footer {
+    padding: 2rem 0 1rem;
+  }
+
+  .footer-logo h3 {
+    font-size: 1.1rem;
+  }
+
+  .footer-logo p {
+    font-size: 0.8rem;
+  }
+
+  .footer-social a {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+
+  .footer-bottom p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Media Query para Tablets (769px até 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Hero Section - Tablets */
+  .hero-container {
+    gap: 3rem;
+    padding: 0 30px;
+  }
+
+  .hero-photo {
+    height: 70vh;
+    min-height: 480px;
+  }
+
+  .hero-brand {
+    font-size: 3.5rem;
+  }
+
+  .hero-name {
+    font-size: 1.6rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem;
+  }
+
+  /* Sobre Section - Tablets */
+  .sobre-content {
+    gap: 3rem;
+  }
+
+  .sobre-image {
+    height: 70vh;
+    min-height: 480px;
+  }
+
+  .sobre-text .section-title {
+    font-size: 2.5rem;
+  }
+
+  .sobre-text p {
+    font-size: 1.05rem;
+  }
+
+  /* Serviços - Tablets */
+  .servicos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  /* Contato - Tablets */
+  .contato-content {
+    gap: 3rem;
+  }
+
+  .contato-form {
+    padding: 2.5rem 2rem;
   }
 }
 
