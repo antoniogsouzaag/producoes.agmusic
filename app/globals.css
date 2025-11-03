@@ -541,13 +541,17 @@ body {
 @media (max-width: 768px) {
   .hero {
     min-height: auto;
-    padding: 80px 0 40px;
+    padding: 60px 0 30px;
+    overflow-x: hidden;
   }
 
   .hero-container {
     grid-template-columns: 1fr;
     gap: 2rem;
     padding: 0 15px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .hero-photo {
@@ -555,16 +559,22 @@ body {
     height: 50vh;
     min-height: 350px;
     max-height: 450px;
+    width: 100%;
+    object-fit: cover;
   }
 
   .hero-photo-frame {
     border-radius: 20px;
+    width: 100%;
+    overflow: hidden;
   }
 
   .hero-content {
     order: 2;
-    padding: 0;
+    padding: 0 15px;
     text-align: center;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .hero-brand {
@@ -3259,6 +3269,13 @@ select.form-control {
     gap: 2rem;
   }
 
+  .contact-form {
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
   .equipment-grid,
   .services-detailed-grid,
   .gallery-grid {
@@ -3281,6 +3298,17 @@ select.form-control {
     gap: 1rem;
     text-align: center;
   }
+
+  .player-controls {
+    gap: 0.5rem;
+  }
+
+  .control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
 
   .player-controls {
     gap: 0.5rem;
