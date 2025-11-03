@@ -26,6 +26,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -34,7 +36,8 @@ body {
   color: var(--text-light);
   line-height: 1.6;
   overflow-x: hidden;
-  /* Performance optimizations */
+  width: 100%;
+  max-width: 100vw;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -44,6 +47,8 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Header/Navigation */
@@ -541,7 +546,7 @@ body {
 @media (max-width: 768px) {
   .hero {
     min-height: auto;
-    padding: 60px 0 30px;
+    padding: 60px 0 60px;
     overflow-x: hidden;
   }
 
@@ -1236,15 +1241,19 @@ body {
   /* Contato Mobile */
   .contato {
     padding: 60px 0;
+    overflow-x: hidden;
   }
 
   .contato-content {
     grid-template-columns: 1fr;
     gap: 2rem;
+    width: 100%;
+    max-width: 100%;
   }
 
   .contato-info {
     padding: 0;
+    width: 100%;
   }
 
   .contato-item {
@@ -1258,7 +1267,31 @@ body {
   }
 
   .contato-form {
-    padding: 2rem;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .form-group {
+    width: 100%;
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  .btn-full {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
   }
 }
 
@@ -1402,13 +1435,37 @@ body {
   }
 
   /* Contato - Celulares Pequenos */
+  /* Contato Mobile */
   .contato {
     padding: 50px 0;
   }
 
-  .contato-form {
-    padding: 1.5rem 1.2rem;
+  .contato-content {
+    gap: 1.5rem;
   }
+
+  .contato-form {
+    padding: 1.2rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .btn-full {
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+}
 
   .form-group input,
   .form-group select,
@@ -1444,7 +1501,7 @@ body {
   .footer-bottom p {
     font-size: 0.8rem;
   }
-}
+
 
 /* Media Query para Tablets (769px até 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
