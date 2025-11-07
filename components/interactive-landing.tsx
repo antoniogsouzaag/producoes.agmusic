@@ -257,7 +257,7 @@ export default function InteractiveLanding() {
                 alt="Antônio Garcia tocando violão"
                 fill
                 className="hero-photo-img"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 100vw, 40vw"
                 priority
               />
             </div>
@@ -267,7 +267,7 @@ export default function InteractiveLanding() {
           <div 
             className="hero-content"
             style={{ 
-              transform: `translateY(${scrollY * 0.5}px)`,
+              transform: `translateY(${scrollY * 0.2}px)`,
               opacity: Math.max(0, 1 - (scrollY / 700))
             }}
           >
