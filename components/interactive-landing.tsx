@@ -1,7 +1,8 @@
 
-'use client'
+ 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import AudioPlayer from './audio-player'
 import MusicManager from './music-manager'
@@ -218,7 +219,9 @@ export default function InteractiveLanding() {
                   sizes="40px"
                 />
               </div>
-              <span className="logo-text">Antônio Garcia</span>
+              <Link href="/">
+                <span className="logo-text">Antônio Garcia</span>
+              </Link>
             </div>
             <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
               <li><button onClick={() => scrollToElement('home')} className="nav-link">Início</button></li>
