@@ -268,7 +268,7 @@ export default function InteractiveLanding() {
             className="hero-content"
             style={{ 
               transform: `translateY(${scrollY * 0.2}px)`,
-              opacity: Math.max(0, 1 - (scrollY / 700))
+              opacity: Math.max(0, 1 - (scrollY / 800))
             }}
           >
             <h1 className="hero-brand">AG Music</h1>
