@@ -17,8 +17,8 @@ export function middleware(request: NextRequest) {
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://kit.fontawesome.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+    "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: https: blob:",
     "media-src 'self' https: blob: https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com",
     "connect-src 'self' https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com",
