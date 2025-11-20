@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     const title = formData.get('title') as string
     const artist = formData.get('artist') as string || 'Antônio Garcia'
     
+    // Validação: arquivo obrigatório
     if (!file) {
       return NextResponse.json(
         { error: 'Nenhum arquivo foi enviado' },
@@ -20,12 +21,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validação: tipo de arquivo
     if (!file.type.startsWith('audio/')) {
       return NextResponse.json(
         { error: 'O arquivo deve ser um áudio' },
         { status: 400 }
       )
     }
+
+    // Segurança: validar tamanho do arquivo (máx 50MB)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'Arquivo muito grande. Tamanho máximo: 50MB' },
+        { status: 413 }
+      )
+    }
+
+    // Segurança: sanitizar e validar título
+    const sanitizedTitle = title?.trim().substring(0, 200)
+    if (!sanitizedTitle || sanitizedTitle.length < 1) {
+      return NextResponse.json(
+        { error: 'Título inválido' },
+        { status: 400 }
+      )
+    }
+
+    // Segurança: sanitizar nome do artista
+    const sanitizedArtist = (artist?.trim() || 'Antônio Garcia').substring(0, 100)
 
     // Convert audio file to buffer
     const audioBuffer = Buffer.from(await file.arrayBuffer())
@@ -36,6 +59,14 @@ export async function POST(request: NextRequest) {
     // Handle cover image upload if provided
     let cover_image_path = null
     if (coverImage && coverImage.type.startsWith('image/')) {
+      // Segurança: validar tamanho da imagem (máx 5MB)
+      const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+      if (coverImage.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json(
+          { error: 'Imagem de capa muito grande. Tamanho máximo: 5MB' },
+          { status: 413 }
+        )
+      }
       const imageBuffer = Buffer.from(await coverImage.arrayBuffer())
       cover_image_path = await uploadFile(imageBuffer, coverImage.name, coverImage.type)
     }
@@ -43,8 +74,8 @@ export async function POST(request: NextRequest) {
     // Save metadata to database
     const music = await prisma.music.create({
       data: {
-        title,
-        artist,
+        title: sanitizedTitle,
+        artist: sanitizedArtist,
         cloud_storage_path,
         cover_image_path,
       },

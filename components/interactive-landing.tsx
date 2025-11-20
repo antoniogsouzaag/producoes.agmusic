@@ -26,16 +26,16 @@ export default function InteractiveLanding() {
   const loadMusics = async () => {
     setIsLoadingMusics(true)
     try {
-      const response = await fetch('/api/music/list')
-      const data = await response.json()
-      // Debug: log what the client receives from the API so we can troubleshoot
-      // why the UI shows more items than the API returns.
-      try {
-        // eslint-disable-next-line no-console
-        console.info('[loadMusics] fetched musics count=', Array.isArray(data.musics) ? data.musics.length : 'no-array', data.musics)
-      } catch (e) {
-        /* ignore logging errors in old browsers */
+      const response = await fetch('/api/music/list', {
+        // Performance: adicionar cache de 60 segundos
+        next: { revalidate: 60 }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+      
+      const data = await response.json()
       setMusics(data.musics || [])
       
       // Show friendly error message if database is unavailable
@@ -237,6 +237,8 @@ export default function InteractiveLanding() {
               <li><button onClick={() => scrollToElement('servicos')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('portfolio')} className="nav-link">Portfólio</button></li>
               <li><a href="/estudio" className="nav-link">Estúdio</a></li>
+              <li><a href="https://agmusic.cloud" className="nav-link">AG Home</a></li>
+              <li><a href="https://app.agmusic.cloud" className="nav-link">App</a></li>
               <li><button onClick={() => scrollToElement('contato')} className="nav-link">Contato</button></li>
             </ul>
             <div 

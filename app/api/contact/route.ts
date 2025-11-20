@@ -3,12 +3,30 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const { nome, email, telefone, servico, mensagem, tipo } = await request.json()
+    const body = await request.json()
+    const { nome, email, telefone, servico, mensagem, tipo } = body
 
     // Validar dados obrigatórios
     if (!nome || !email || !servico || !mensagem) {
       return NextResponse.json(
         { error: 'Campos obrigatórios não preenchidos' },
+        { status: 400 }
+      )
+    }
+
+    // Segurança: validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Email inválido' },
+        { status: 400 }
+      )
+    }
+
+    // Segurança: limitar tamanho dos campos
+    if (nome.length > 200 || email.length > 200 || mensagem.length > 5000) {
+      return NextResponse.json(
+        { error: 'Dados excedem tamanho máximo permitido' },
         { status: 400 }
       )
     }
