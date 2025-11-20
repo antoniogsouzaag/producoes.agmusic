@@ -28,6 +28,14 @@ export default function InteractiveLanding() {
     try {
       const response = await fetch('/api/music/list')
       const data = await response.json()
+      // Debug: log what the client receives from the API so we can troubleshoot
+      // why the UI shows more items than the API returns.
+      try {
+        // eslint-disable-next-line no-console
+        console.info('[loadMusics] fetched musics count=', Array.isArray(data.musics) ? data.musics.length : 'no-array', data.musics)
+      } catch (e) {
+        /* ignore logging errors in old browsers */
+      }
       setMusics(data.musics || [])
       
       // Show friendly error message if database is unavailable

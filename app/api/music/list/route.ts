@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getFileUrl } from '@/lib/s3'
+import { getBucketConfig } from '@/lib/aws-config'
 
 // ----------------------------------------------------
 // 1. DEFINE UMA FUNÇÃO AUXILIAR PARA A QUERY E INFERE O TIPO DE RETORNO
@@ -28,10 +29,22 @@ export async function GET() {
     const musics = await getMusicsQuery();
     
     // Generate signed URLs for each music file and cover image
-    const musicsWithUrls = await Promise.all(
-      // APLICAÇÃO DO TIPO MusicType INFERIDO
+    // Only include records that look like they've been uploaded via our uploader
+    const { folderPrefix } = getBucketConfig()
+    const expectedPrefix = (folderPrefix || '') + 'music/'
+
+    const { fileExists } = await import('@/lib/s3')
+
+    const candidates = await Promise.all(
       musics.map(async (music: MusicType) => {
-        const url = await getFileUrl(music.cloud_storage_path)
+        const path = music.cloud_storage_path || ''
+        const looksLikeUpload = typeof path === 'string' && (path.startsWith(expectedPrefix) || path.includes('/music/'))
+        if (!looksLikeUpload) return null
+
+        const exists = await fileExists(path)
+        if (!exists) return null
+
+        const url = await getFileUrl(path)
         const coverUrl = music.cover_image_path ? await getFileUrl(music.cover_image_path) : null
         return {
           id: String(music.id),
@@ -43,7 +56,16 @@ export async function GET() {
         }
       })
     )
-    
+
+    const musicsWithUrls = candidates.filter(Boolean) as Array<{
+      id: string
+      title: string
+      artist: string
+      url: string
+      coverUrl: string | null
+      duration: number
+    }>
+
     return NextResponse.json({ musics: musicsWithUrls })
   } catch (error) {
     console.error('Database connection error:', error)

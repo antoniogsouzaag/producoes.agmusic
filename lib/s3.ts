@@ -1,5 +1,5 @@
 
-import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { createS3Client, getBucketConfig } from "./aws-config"
 
@@ -55,5 +55,16 @@ export async function deleteFile(key: string) {
     console.error('S3 delete error:', error)
     // Don't throw error on delete failure to prevent blocking database cleanup
     console.warn(`Failed to delete file from S3: ${key}`)
+  }
+}
+
+export async function fileExists(key: string) {
+  try {
+    const command = new HeadObjectCommand({ Bucket: bucketName, Key: key })
+    await s3Client.send(command)
+    return true
+  } catch (error: any) {
+    // If the object is not found, S3 will return a 404-like error. Treat any error as non-existence.
+    return false
   }
 }

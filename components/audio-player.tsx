@@ -27,7 +27,12 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  const currentMusic = musics[currentMusicIndex]
+  // Only keep tracks that look like they're coming from the AWS S3 bucket
+  // This prevents any old/example tracks from appearing in the player's playlist.
+  const AWS_URL_PATTERN = /amazonaws\.com|s3\.amazonaws\.com|s3\./i
+  const filteredMusics = musics.filter((m) => !!m.url && AWS_URL_PATTERN.test(m.url))
+
+  const currentMusic = filteredMusics[currentMusicIndex]
 
   useEffect(() => {
     const audio = audioRef.current
@@ -39,7 +44,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       setIsLoading(false)
     }
     const handleEnded = () => {
-      if (currentMusicIndex < musics.length - 1) {
+      if (currentMusicIndex < filteredMusics.length - 1) {
         setCurrentMusicIndex(currentMusicIndex + 1)
         setIsPlaying(true)
       } else {
@@ -84,13 +89,30 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       audio.removeEventListener('canplay', handleCanPlay)
       audio.removeEventListener('error', handleError)
     }
-  }, [currentMusicIndex, isPlaying, musics.length])
+  }, [currentMusicIndex, isPlaying, filteredMusics.length])
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume
     }
   }, [volume])
+
+  useEffect(() => {
+    // 1. Garante que se a lista encolheu ou está vazia, o índice seja 0.
+    // If there are no valid AWS tracks, reset player state
+    if (filteredMusics.length === 0 || currentMusicIndex >= filteredMusics.length) {
+      setCurrentMusicIndex(0)
+      setIsPlaying(false)
+      // Pausa o áudio e reseta o tempo para o início
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      }
+    }
+    // 2. Se o índice atual for a última música e o `musics.length` mudar,
+    // ele reinicia o estado para evitar a exibição de dados incorretos.
+
+  }, [musics, currentMusicIndex])
 
   const handlePlayPause = () => {
     if (!audioRef.current) return
@@ -104,7 +126,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   }
 
   const handleNext = () => {
-    if (currentMusicIndex < musics.length - 1) {
+    if (currentMusicIndex < filteredMusics.length - 1) {
       setCurrentMusicIndex(currentMusicIndex + 1)
       setIsPlaying(true)
     } else {
@@ -140,15 +162,13 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  if (musics.length === 0) {
+  if (filteredMusics.length === 0) {
     return (
       <div className="portfolio-player">
         <i className="fas fa-music"></i>
         <h3>Portfólio Musical</h3>
-        <p>Adicione suas primeiras músicas para criar um portfólio incrível!</p>
-        <p className="text-sm opacity-75">
-          Use o botão "Adicionar Música" acima para fazer upload de suas produções musicais.
-        </p>
+        <p>Nenhuma música disponível do bucket AWS no momento.</p>
+        <p className="text-sm opacity-75">Verifique se o upload foi concluído ou atualize a lista.</p>
         {onRefresh && (
           <button onClick={onRefresh} className="btn btn-primary" style={{ marginTop: '1rem' }}>
             <i className="fas fa-sync-alt"></i> Atualizar Lista
@@ -160,7 +180,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
 
   return (
     <div className="audio-player-container">
-      <audio ref={audioRef} src={currentMusic?.url} />
+  <audio ref={audioRef} src={currentMusic?.url} />
       
       {/* Cover Image */}
       <div className="player-cover-container">
@@ -223,7 +243,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         
         <button 
           onClick={handleNext} 
-          disabled={currentMusicIndex === musics.length - 1}
+          disabled={currentMusicIndex === filteredMusics.length - 1}
           className="control-btn"
         >
           <i className="fas fa-step-forward"></i>
@@ -245,11 +265,11 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       </div>
 
       {/* Playlist */}
-      {musics.length > 1 && (
+      {filteredMusics.length > 1 && (
         <div className="player-playlist">
-          <h4>Playlist ({musics.length} músicas)</h4>
+          <h4>Playlist ({filteredMusics.length} músicas)</h4>
           <div className="playlist-items">
-            {musics.map((music, index) => (
+            {filteredMusics.map((music, index) => (
               <div
                 key={music.id}
                 className={`playlist-item ${index === currentMusicIndex ? 'active' : ''}`}
