@@ -54,80 +54,60 @@ export default function Chatbot() {
     setIsLoading(true)
 
     try {
-      // CORREÇÃO 2: Melhorar integração do chatbot com timeout e headers adicionais
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 segundos timeout
 
       const response = await fetch('https://webhook.agmusic.cloud/webhook/botagmusic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'User-Agent': 'AG-Music-Website/1.0',
-          'X-Requested-With': 'XMLHttpRequest'
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           message: text.trim(),
           timestamp: new Date().toISOString(),
           user_id: 'web_user_' + Date.now(),
-          source: 'website',
-          session_id: 'session_' + Date.now(),
-          user_agent: navigator.userAgent || 'Unknown'
+          source: 'website'
         }),
         signal: controller.signal
       })
 
       clearTimeout(timeoutId)
 
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const responseText = await response.text()
-      console.log('Raw response:', responseText)
+      console.log('Webhook response:', responseText)
       
-      let data
       let botResponseText = ''
       
+      // Tentar parsear como JSON
       try {
-        data = JSON.parse(responseText)
-        console.log('Parsed JSON data:', data)
-      } catch (parseError) {
-        console.log('Response is not JSON, using as plain text')
-        // Se não for JSON válido, use a resposta como texto direto
-        botResponseText = responseText.trim() || 'Resposta recebida com sucesso!'
-      }
-      
-      // Se conseguiu parsear como JSON, extraia a mensagem
-      if (data && !botResponseText) {
+        const data = JSON.parse(responseText)
+        
+        // Extrair mensagem do JSON
         if (typeof data === 'string') {
           botResponseText = data
         } else if (data.response) {
           botResponseText = data.response
         } else if (data.message) {
           botResponseText = data.message
-        } else if (data.output) {
-          botResponseText = data.output
         } else if (data.text) {
           botResponseText = data.text
         } else if (data.reply) {
           botResponseText = data.reply
-        } else if (data.content) {
-          botResponseText = data.content
-        } else if (data.data && data.data.message) {
-          botResponseText = data.data.message
-        } else if (Array.isArray(data) && data.length > 0) {
-          botResponseText = data[0].message || data[0].text || data[0].content || JSON.stringify(data[0])
         } else {
-          // Se não encontrar um campo conhecido, use a primeira propriedade string
-          const firstStringValue = Object.values(data).find(val => typeof val === 'string')
-          botResponseText = firstStringValue as string || JSON.stringify(data) || 'Resposta recebida!'
+          // Pegar a primeira string encontrada
+          const firstString = Object.values(data).find(val => typeof val === 'string')
+          botResponseText = firstString as string || JSON.stringify(data)
         }
+      } catch (parseError) {
+        // Se não for JSON, usar como texto plano
+        botResponseText = responseText.trim()
       }
-
+      
       // Garantir que temos uma resposta válida
       if (!botResponseText || botResponseText.length === 0) {
         botResponseText = 'Recebi sua mensagem! Como posso ajudar mais?'
