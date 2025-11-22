@@ -55,7 +55,17 @@ export default function Chatbot() {
 
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 segundos timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
+
+      console.log('=== CHATBOT DEBUG ===')
+      console.log('Enviando para:', 'https://webhook.agmusic.cloud/webhook/botagmusic')
+      console.log('Método:', 'POST')
+      console.log('Payload:', {
+        message: text.trim(),
+        timestamp: new Date().toISOString(),
+        user_id: 'web_user_' + Date.now(),
+        source: 'website'
+      })
 
       const response = await fetch('https://webhook.agmusic.cloud/webhook/botagmusic', {
         method: 'POST',
@@ -74,18 +84,22 @@ export default function Chatbot() {
 
       clearTimeout(timeoutId)
 
+      console.log('Status da resposta:', response.status, response.statusText)
+      console.log('Headers da resposta:', Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const responseText = await response.text()
-      console.log('Webhook response:', responseText)
+      console.log('Resposta recebida:', responseText)
       
       let botResponseText = ''
       
       // Tentar parsear como JSON
       try {
         const data = JSON.parse(responseText)
+        console.log('JSON parseado:', data)
         
         // Extrair mensagem do JSON
         if (typeof data === 'string') {
@@ -104,9 +118,12 @@ export default function Chatbot() {
           botResponseText = firstString as string || JSON.stringify(data)
         }
       } catch (parseError) {
+        console.log('Resposta não é JSON, usando como texto plano')
         // Se não for JSON, usar como texto plano
         botResponseText = responseText.trim()
       }
+      
+      console.log('Texto final do bot:', botResponseText)
       
       // Garantir que temos uma resposta válida
       if (!botResponseText || botResponseText.length === 0) {

@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
     "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: https: blob:",
     "media-src 'self' https: blob: https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com",
-    "connect-src 'self' https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com",
+    "connect-src 'self' https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com https://webhook.agmusic.cloud",
     "frame-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
