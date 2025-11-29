@@ -54,6 +54,7 @@ export default function InteractiveLanding() {
     loadMusics()
   }, [])
 
+  // Efeito para scroll e animações - executa apenas uma vez
   useEffect(() => {
     // Debounced scroll handler for better performance
     let scrollTimeout: NodeJS.Timeout
@@ -131,7 +132,18 @@ export default function InteractiveLanding() {
       observer.observe(statsSection)
     }
 
-    // Close on ESC and lock body scroll when menu is open
+    // Use passive listener for better scroll performance
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+      if (scrollTimeout) clearTimeout(scrollTimeout)
+    }
+  }, []) // Executa apenas uma vez na montagem
+
+  // Efeito separado para controle do menu mobile
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsMenuOpen(false)
     }
@@ -142,15 +154,11 @@ export default function InteractiveLanding() {
       document.body.classList.remove('no-scroll')
     }
 
-    // Use passive listener for better scroll performance
-    window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('keydown', handleKeyDown)
     
     return () => {
-      window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('keydown', handleKeyDown)
-      observer.disconnect()
-      if (scrollTimeout) clearTimeout(scrollTimeout)
+      document.body.classList.remove('no-scroll')
     }
   }, [isMenuOpen])
 
