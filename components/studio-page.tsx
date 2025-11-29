@@ -31,6 +31,22 @@ export default function StudioPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Melhorias de acessibilidade e UX do menu mobile: trava scroll e fecha com ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false)
+    }
+
+    if (isMenuOpen) {
+      document.body.classList.add('no-scroll')
+    } else {
+      document.body.classList.remove('no-scroll')
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isMenuOpen])
+
   const scrollToElement = (elementId: string) => {
     const element = document.getElementById(elementId)
     if (element) {
@@ -108,24 +124,35 @@ export default function StudioPage() {
               </div>
               <span className="logo-text">Antônio Garcia</span>
             </Link>
-            <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
+            {/* Overlay para o menu mobile */}
+            <div
+              className={`nav-overlay ${isMenuOpen ? 'active' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+              aria-hidden="true"
+            />
+
+            <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`} id="primary-navigation" role="menu">
               <li><Link href="/" className="nav-link">Início</Link></li>
               <li><button onClick={() => scrollToElement('sobre-estudio')} className="nav-link">Sobre</button></li>
               <li><button onClick={() => scrollToElement('equipamentos')} className="nav-link">Equipamentos</button></li>
               <li><button onClick={() => scrollToElement('servicos-estudio')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('galeria')} className="nav-link">Galeria</button></li>
-              <li><a href="https://agmusic.cloud/home-music" className="nav-link">AG Home</a></li>
-              <li><a href="https://app.agmusic.cloud" className="nav-link">App</a></li>
+              <li><a href="https://agmusic.cloud/home-music" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
+              <li><a href="https://app.agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
               <li><button onClick={() => scrollToElement('contato-estudio')} className="nav-link">Contato</button></li>
             </ul>
-            <div 
+            <button
+              type="button"
               className={`hamburger ${isMenuOpen ? 'active' : ''}`}
+              aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-controls="primary-navigation"
+              aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <span></span>
               <span></span>
               <span></span>
-            </div>
+            </button>
           </div>
         </nav>
       </header>

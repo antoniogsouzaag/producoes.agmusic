@@ -131,15 +131,28 @@ export default function InteractiveLanding() {
       observer.observe(statsSection)
     }
 
+    // Close on ESC and lock body scroll when menu is open
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false)
+    }
+
+    if (isMenuOpen) {
+      document.body.classList.add('no-scroll')
+    } else {
+      document.body.classList.remove('no-scroll')
+    }
+
     // Use passive listener for better scroll performance
     window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('keydown', handleKeyDown)
     
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('keydown', handleKeyDown)
       observer.disconnect()
       if (scrollTimeout) clearTimeout(scrollTimeout)
     }
-  }, [])
+  }, [isMenuOpen])
 
   const animateCounter = (element: HTMLElement, target: number, duration = 2000) => {
     const startTime = performance.now()
@@ -231,24 +244,35 @@ export default function InteractiveLanding() {
                 <span className="logo-text">Antônio Garcia</span>
               </Link>
             </div>
-            <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
+            {/* Overlay for mobile menu */}
+            <div
+              className={`nav-overlay ${isMenuOpen ? 'active' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+              aria-hidden="true"
+            />
+
+            <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`} id="primary-navigation" role="menu">
               <li><button onClick={() => scrollToElement('home')} className="nav-link">Início</button></li>
               <li><button onClick={() => scrollToElement('sobre')} className="nav-link">Sobre</button></li>
               <li><button onClick={() => scrollToElement('servicos')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('portfolio')} className="nav-link">Portfólio</button></li>
-              <li><a href="/estudio" className="nav-link">Estúdio</a></li>
-              <li><a href="https://agmusic.cloud/home-music" className="nav-link">AG Home</a></li>
-              <li><a href="https://app.agmusic.cloud" className="nav-link">App</a></li>
+              <li><a href="/estudio" className="nav-link" onClick={() => setIsMenuOpen(false)}>Estúdio</a></li>
+              <li><a href="https://agmusic.cloud/home-music" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
+              <li><a href="https://app.agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
               <li><button onClick={() => scrollToElement('contato')} className="nav-link">Contato</button></li>
             </ul>
-            <div 
+            <button
+              type="button"
               className={`hamburger ${isMenuOpen ? 'active' : ''}`}
+              aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-controls="primary-navigation"
+              aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <span></span>
               <span></span>
               <span></span>
-            </div>
+            </button>
           </div>
         </nav>
       </header>
