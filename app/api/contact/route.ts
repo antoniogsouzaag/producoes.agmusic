@@ -53,7 +53,7 @@ Data: ${new Date().toLocaleString('pt-BR')}
     `.trim()
 
     // Criar o link mailto com os dados preenchidos
-    const mailtoLink = `mailto:agmusicproducoes@gmail.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(emailBody)}`
+    const mailtoLink = `mailto:suporte@agmusic.cloud?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(emailBody)}`
 
     console.log('Contato recebido:', {
       nome,

@@ -530,7 +530,7 @@ export default function StudioPage() {
                   <i className="fas fa-envelope"></i>
                 </div>
                 <div className="contact-details">
-                  <p>agmusicproducoes@gmail.com</p>
+                  <p>suporte@agmusic.cloud</p>
                   <span>Email profissional</span>
                 </div>
               </div>

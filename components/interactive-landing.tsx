@@ -515,7 +515,7 @@ export default function InteractiveLanding() {
                 </div>
                 <div>
                   <h3>Email</h3>
-                  <a href="mailto:agmusicproduçoes@gmail.com">agmusicproduçoes@gmail.com</a>
+                  <a href="mailto:suporte@agmusic.cloud">suporte@agmusic.cloud</a>
                 </div>
               </div>
 
