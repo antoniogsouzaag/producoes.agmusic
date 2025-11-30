@@ -28,7 +28,20 @@ export async function uploadFile(buffer: Buffer, fileName: string, contentType: 
   }
 }
 
+// Gera URL pública direta para o bucket (bucket é público)
+export function getPublicUrl(key: string): string {
+  const region = process.env.AWS_REGION || 'us-east-1'
+  return `https://${bucketName}.s3.${region}.amazonaws.com/${key}`
+}
+
+// Mantém a função getFileUrl para compatibilidade, mas usa URL pública
 export async function getFileUrl(key: string, expiresIn: number = 3600) {
+  // Como o bucket é público, usamos URL direta (mais rápido e sem expiração)
+  return getPublicUrl(key)
+}
+
+// Função alternativa para gerar URL assinada (caso precise no futuro)
+export async function getSignedFileUrl(key: string, expiresIn: number = 3600) {
   try {
     const command = new GetObjectCommand({
       Bucket: bucketName,
@@ -38,7 +51,7 @@ export async function getFileUrl(key: string, expiresIn: number = 3600) {
     const url = await getSignedUrl(s3Client, command, { expiresIn })
     return url
   } catch (error) {
-    console.error('S3 getFileUrl error:', error)
+    console.error('S3 getSignedFileUrl error:', error)
     throw new Error('Failed to generate file URL. Please check AWS credentials and bucket configuration.')
   }
 }
