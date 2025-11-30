@@ -3,86 +3,70 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getFileUrl } from '@/lib/s3'
-import { getBucketConfig } from '@/lib/aws-config'
-
-// ----------------------------------------------------
-// 1. DEFINE UMA FUNÇÃO AUXILIAR PARA A QUERY E INFERE O TIPO DE RETORNO
-const getMusicsQuery = () => prisma.music.findMany({
-  orderBy: {
-    createdAt: 'desc',
-  },
-});
-
-// 2. EXTRAI O TIPO DO ARRAY DE RETORNO DA FUNÇÃO DO PRISMA
-// O tipo MusicArrayType é [Music, Music, Music, ...]
-type MusicArrayType = Awaited<ReturnType<typeof getMusicsQuery>>;
-
-// 3. EXTRAI O TIPO DO ITEM (MÚSICA) DO ARRAY
-type MusicType = MusicArrayType[number];
-// ----------------------------------------------------
-
+import { getFileUrl, fileExists } from '@/lib/s3'
 
 export async function GET() {
   try {
-    // A chamada da query agora usa a função auxiliar
-    const musics = await getMusicsQuery();
+    console.log('[API /music/list] Starting request...')
     
-    // Generate signed URLs for each music file and cover image
-    // Only include records that look like they've been uploaded via our uploader
-    const { folderPrefix } = getBucketConfig()
-    const expectedPrefix = (folderPrefix || '') + 'music/'
+    // Buscar todas as músicas do banco
+    const musics = await prisma.music.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+    
+    console.log(`[API /music/list] Found ${musics.length} musics in database`)
 
-    const { fileExists } = await import('@/lib/s3')
+    // Gerar URLs assinadas para cada música
+    const musicsWithUrls = await Promise.all(
+      musics.map(async (music) => {
+        try {
+          const path = music.cloud_storage_path
+          
+          // Se não tem path, pula
+          if (!path) {
+            console.log(`[API /music/list] Music ${music.id} has no cloud_storage_path, skipping`)
+            return null
+          }
 
-    const candidates = await Promise.all(
-      musics.map(async (music: MusicType) => {
-        const path = music.cloud_storage_path || ''
-        const looksLikeUpload = typeof path === 'string' && (path.startsWith(expectedPrefix) || path.includes('/music/'))
-        if (!looksLikeUpload) return null
+          // Verifica se o arquivo existe no S3
+          const exists = await fileExists(path)
+          if (!exists) {
+            console.log(`[API /music/list] File not found in S3 for music ${music.id}: ${path}`)
+            return null
+          }
 
-        const exists = await fileExists(path)
-        if (!exists) return null
-
-        const url = await getFileUrl(path)
-        const coverUrl = music.cover_image_path ? await getFileUrl(music.cover_image_path) : null
-        return {
-          id: String(music.id),
-          title: music.title,
-          artist: music.artist,
-          url: url,
-          coverUrl: coverUrl,
-          duration: music.duration ?? 0,
+          // Gera URL assinada
+          const url = await getFileUrl(path)
+          const coverUrl = music.cover_image_path ? await getFileUrl(music.cover_image_path) : null
+          
+          return {
+            id: String(music.id),
+            title: music.title,
+            artist: music.artist,
+            url: url,
+            coverUrl: coverUrl,
+            duration: music.duration ?? 0,
+          }
+        } catch (err) {
+          console.error(`[API /music/list] Error processing music ${music.id}:`, err)
+          return null
         }
       })
     )
 
-    const musicsWithUrls = candidates.filter(Boolean) as Array<{
-      id: string
-      title: string
-      artist: string
-      url: string
-      coverUrl: string | null
-      duration: number
-    }>
+    // Filtra músicas válidas
+    const validMusics = musicsWithUrls.filter(Boolean)
+    console.log(`[API /music/list] Returning ${validMusics.length} valid musics`)
 
-    return NextResponse.json({ musics: musicsWithUrls })
+    return NextResponse.json({ musics: validMusics })
   } catch (error) {
-    console.error('Database connection error:', error)
+    console.error('[API /music/list] Error:', error)
     
-    // Check if it's a database connection error
-    if (error && typeof error === 'object' && 'code' in error) {
-      const prismaError = error as any
-      if (prismaError.code === 'P1001' || prismaError.code === 'ENOTFOUND' || prismaError.code === 'ETIMEDOUT') {
-        return NextResponse.json({
-          error: 'Sistema temporariamente indisponível. Por favor, tente novamente em alguns minutos.',
-          musics: [] // Return empty array so the UI can still render
-        })
-      }
-    }
-    
+    // Retorna array vazio para não quebrar a UI
     return NextResponse.json(
-      { error: 'Erro temporário ao carregar músicas. Tente novamente.', musics: [] },
+      { error: 'Erro ao carregar músicas', musics: [] },
       { status: 500 }
     )
   }

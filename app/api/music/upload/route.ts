@@ -6,12 +6,23 @@ import { prisma } from '@/lib/db'
 import { uploadFile } from '@/lib/s3'
 
 export async function POST(request: NextRequest) {
+  console.log('[API /music/upload] Starting upload request...')
+  
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File
     const coverImage = formData.get('coverImage') as File | null
     const title = formData.get('title') as string
     const artist = formData.get('artist') as string || 'Antônio Garcia'
+    
+    console.log('[API /music/upload] Form data received:', {
+      hasFile: !!file,
+      fileType: file?.type,
+      fileSize: file?.size,
+      hasCover: !!coverImage,
+      title,
+      artist
+    })
     
     // Validação: arquivo obrigatório
     if (!file) {
@@ -51,10 +62,13 @@ export async function POST(request: NextRequest) {
     const sanitizedArtist = (artist?.trim() || 'Antônio Garcia').substring(0, 100)
 
     // Convert audio file to buffer
+    console.log('[API /music/upload] Converting file to buffer...')
     const audioBuffer = Buffer.from(await file.arrayBuffer())
     
     // Upload audio to S3
+    console.log('[API /music/upload] Uploading to S3...')
     const cloud_storage_path = await uploadFile(audioBuffer, file.name, file.type)
+    console.log('[API /music/upload] Audio uploaded to:', cloud_storage_path)
     
     // Handle cover image upload if provided
     let cover_image_path = null
@@ -67,11 +81,14 @@ export async function POST(request: NextRequest) {
           { status: 413 }
         )
       }
+      console.log('[API /music/upload] Uploading cover image...')
       const imageBuffer = Buffer.from(await coverImage.arrayBuffer())
       cover_image_path = await uploadFile(imageBuffer, coverImage.name, coverImage.type)
+      console.log('[API /music/upload] Cover uploaded to:', cover_image_path)
     }
     
     // Save metadata to database
+    console.log('[API /music/upload] Saving to database...')
     const music = await prisma.music.create({
       data: {
         title: sanitizedTitle,
@@ -80,6 +97,8 @@ export async function POST(request: NextRequest) {
         cover_image_path,
       },
     })
+    
+    console.log('[API /music/upload] Success! Music ID:', music.id)
     
     return NextResponse.json({ 
       success: true, 
@@ -90,7 +109,7 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Upload error:', error)
+    console.error('[API /music/upload] Error:', error)
     
     // Check if it's a database connection error
     if (error && typeof error === 'object' && 'code' in error) {
@@ -102,8 +121,10 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    // Retornar erro mais detalhado em desenvolvimento
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
     return NextResponse.json(
-      { error: 'Erro temporário ao fazer upload. Tente novamente em alguns instantes.' },
+      { error: `Erro ao fazer upload: ${errorMessage}` },
       { status: 500 }
     )
   }
