@@ -116,11 +116,23 @@ export async function POST(request: NextRequest) {
           cover_image_path,
         },
       })
-    } catch (err) {
+    } catch (err: any) {
       console.error('[API /music/upload] Database Write Error:', err)
+      
+      // Se a tabela não existe, tente criar
+      if (err.code === 'P2021') {
+        console.error('[API /music/upload] Table does not exist. Please run: npx prisma db push')
+        return NextResponse.json({ 
+          error: 'Banco de dados não inicializado. Por favor, contate o administrador.' 
+        }, { status: 500 })
+      }
+      
       // Try to clean up S3 file if DB write fails
       // await deleteFile(cloud_storage_path) 
-      return NextResponse.json({ error: 'Erro ao salvar informações no banco de dados.' }, { status: 500 })
+      return NextResponse.json({ 
+        error: 'Erro ao salvar informações no banco de dados.',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      }, { status: 500 })
     }
     
     console.log('[API /music/upload] Success! Music ID:', music.id)

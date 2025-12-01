@@ -40,12 +40,28 @@ export async function GET() {
     console.log(`[API /music/list] Returning ${musicsWithUrls.length} musics`)
 
     return NextResponse.json({ musics: musicsWithUrls })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API /music/list] Error:', error)
+    
+    // Se a tabela não existe, retorna mensagem específica
+    if (error.code === 'P2021') {
+      console.error('[API /music/list] Table does not exist. Please run: npx prisma db push')
+      return NextResponse.json(
+        { 
+          error: 'Banco de dados não inicializado. Por favor, contate o administrador.',
+          musics: [] 
+        },
+        { status: 500 }
+      )
+    }
     
     // Retorna array vazio para não quebrar a UI
     return NextResponse.json(
-      { error: 'Erro ao carregar músicas', musics: [] },
+      { 
+        error: 'Erro ao carregar músicas', 
+        musics: [],
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     )
   }

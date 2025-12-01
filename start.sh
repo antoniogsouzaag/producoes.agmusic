@@ -6,11 +6,14 @@ echo "🔄 Running database migrations..."
 # Gera o Prisma Client (necessário porque o standalone não inclui dev dependencies)
 npx prisma generate
 
-# Sincroniza o schema com o banco (cria a tabela se não existir)
-npx prisma db push --accept-data-loss --skip-generate
+# Tenta executar migrations primeiro, se falhar usa db push
+if ! npx prisma migrate deploy; then
+  echo "⚠️  Migrate deploy failed, falling back to db push..."
+  npx prisma db push --accept-data-loss --skip-generate
+fi
 
 echo "✅ Migrations complete!"
 echo "🚀 Starting application..."
 
-# Inicia o servidor Next.js standalone
-exec node server.js
+# Inicia o servidor Next.js
+exec npm run start
