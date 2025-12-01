@@ -164,6 +164,6 @@ npm run dev
 
 ---
 
-**Data da Revisão**: 20 de Novembro de 2025  
-**Versão do Código**: 2.0  
+**Data da Revisão**: Janeiro de 2026  
+**Versão do Código**: 2.1  
 **Status**: ✅ APROVADO PARA PRODUÇÃO

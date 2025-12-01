@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 interface Music {
   id: number
@@ -26,6 +26,12 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
+  
+  // Carousel drag state
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [scrollLeft, setScrollLeft] = useState(0)
 
   // Only keep tracks that look like they're coming from the AWS S3 bucket
   // This prevents any old/example tracks from appearing in the player's playlist.
@@ -155,6 +161,70 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     setVolume(vol)
   }
 
+  // Carousel drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!carouselRef.current) return
+    setIsDragging(true)
+    setStartX(e.pageX - carouselRef.current.offsetLeft)
+    setScrollLeft(carouselRef.current.scrollLeft)
+  }, [])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !carouselRef.current) return
+    e.preventDefault()
+    const x = e.pageX - carouselRef.current.offsetLeft
+    const walk = (x - startX) * 2
+    carouselRef.current.scrollLeft = scrollLeft - walk
+  }, [isDragging, startX, scrollLeft])
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  // Touch handlers for mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!carouselRef.current) return
+    setIsDragging(true)
+    setStartX(e.touches[0].pageX - carouselRef.current.offsetLeft)
+    setScrollLeft(carouselRef.current.scrollLeft)
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging || !carouselRef.current) return
+    const x = e.touches[0].pageX - carouselRef.current.offsetLeft
+    const walk = (x - startX) * 2
+    carouselRef.current.scrollLeft = scrollLeft - walk
+  }, [isDragging, startX, scrollLeft])
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  // Scroll to current track in carousel
+  const scrollToTrack = useCallback((index: number) => {
+    if (!carouselRef.current) return
+    const cards = carouselRef.current.querySelectorAll('.carousel-card')
+    if (cards[index]) {
+      const card = cards[index] as HTMLElement
+      const containerWidth = carouselRef.current.offsetWidth
+      const cardWidth = card.offsetWidth
+      const scrollPosition = card.offsetLeft - (containerWidth / 2) + (cardWidth / 2)
+      carouselRef.current.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      })
+    }
+  }, [])
+
+  // Scroll to current track when it changes
+  useEffect(() => {
+    scrollToTrack(currentMusicIndex)
+  }, [currentMusicIndex, scrollToTrack])
+
   const formatTime = (time: number) => {
     if (isNaN(time)) return '0:00'
     const minutes = Math.floor(time / 60)
@@ -264,37 +334,82 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         />
       </div>
 
-      {/* Playlist */}
+      {/* Carousel de Produções */}
       {filteredMusics.length > 1 && (
-        <div className="player-playlist">
-          <h4>Playlist ({filteredMusics.length} músicas)</h4>
-          <div className="playlist-items">
+        <div className="player-carousel-section">
+          <h4><i className="fas fa-headphones"></i> Minhas Produções ({filteredMusics.length})</h4>
+          <p className="carousel-hint">
+            <i className="fas fa-hand-pointer"></i> Arraste para navegar
+          </p>
+          <div 
+            ref={carouselRef}
+            className={`carousel-container ${isDragging ? 'dragging' : ''}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             {filteredMusics.map((music, index) => (
               <div
                 key={music.id}
-                className={`playlist-item ${index === currentMusicIndex ? 'active' : ''}`}
+                className={`carousel-card ${index === currentMusicIndex ? 'active' : ''}`}
                 onClick={() => {
-                  setCurrentMusicIndex(index)
-                  setIsPlaying(true)
+                  if (!isDragging) {
+                    setCurrentMusicIndex(index)
+                    setIsPlaying(true)
+                  }
                 }}
               >
-                {music.coverUrl ? (
-                  <div className="playlist-cover-thumb">
+                <div className="carousel-card-cover">
+                  {music.coverUrl ? (
                     <img src={music.coverUrl} alt={`Capa de ${music.title}`} />
-                  </div>
-                ) : (
-                  <span className="playlist-number">{index + 1}</span>
-                )}
-                <div className="playlist-info">
-                  <div className="playlist-title">{music.title}</div>
-                  <div className="playlist-artist">{music.artist}</div>
+                  ) : (
+                    <div className="carousel-default-cover">
+                      <i className="fas fa-music"></i>
+                    </div>
+                  )}
+                  {index === currentMusicIndex && isPlaying && (
+                    <div className="carousel-playing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  )}
                 </div>
-                {index === currentMusicIndex && isPlaying && (
-                  <i className="fas fa-volume-up playlist-playing"></i>
-                )}
+                <div className="carousel-card-info">
+                  <div className="carousel-card-title">{music.title}</div>
+                  <div className="carousel-card-artist">{music.artist}</div>
+                </div>
               </div>
             ))}
           </div>
+          
+          {/* Carousel Navigation Arrows */}
+          <button 
+            className="carousel-nav-btn carousel-nav-prev"
+            onClick={() => {
+              if (carouselRef.current) {
+                carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' })
+              }
+            }}
+            aria-label="Anterior"
+          >
+            <i className="fas fa-chevron-left"></i>
+          </button>
+          <button 
+            className="carousel-nav-btn carousel-nav-next"
+            onClick={() => {
+              if (carouselRef.current) {
+                carouselRef.current.scrollBy({ left: 200, behavior: 'smooth' })
+              }
+            }}
+            aria-label="Próximo"
+          >
+            <i className="fas fa-chevron-right"></i>
+          </button>
         </div>
       )}
     </div>

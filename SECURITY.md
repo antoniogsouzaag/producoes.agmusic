@@ -141,5 +141,5 @@ NEXTAUTH_SECRET="..." # Gere com: openssl rand -base64 32
 Em caso de problemas de segurança, contate imediatamente o desenvolvedor.
 
 ---
-**Última atualização**: Novembro 2025
-**Versão**: 2.0
+**Última atualização**: Janeiro 2026
+**Versão**: 2.1

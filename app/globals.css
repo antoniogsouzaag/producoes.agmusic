@@ -3231,7 +3231,223 @@ select.form-control {
   box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
 }
 
-/* Playlist */
+/* Carousel de Produções */
+.player-carousel-section {
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+  position: relative;
+}
+
+.player-carousel-section h4 {
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.player-carousel-section h4 i {
+  color: var(--primary-pink);
+  margin-right: 0.5rem;
+}
+
+.carousel-hint {
+  text-align: center;
+  color: var(--text-gray);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.carousel-hint i {
+  margin-right: 0.3rem;
+}
+
+.carousel-container {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 1rem 0.5rem;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carousel-container::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-container.dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.carousel-card {
+  flex: 0 0 auto;
+  width: 150px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  user-select: none;
+}
+
+.carousel-card:hover {
+  background: rgba(255, 0, 128, 0.1);
+  transform: translateY(-5px);
+  border-color: rgba(255, 0, 128, 0.3);
+}
+
+.carousel-card.active {
+  background: var(--gradient-1);
+  border-color: var(--primary-pink);
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(255, 0, 128, 0.4);
+}
+
+.carousel-card-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.75rem;
+  background: var(--dark-bg);
+}
+
+.carousel-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.carousel-card:hover .carousel-card-cover img {
+  transform: scale(1.1);
+}
+
+.carousel-default-cover {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 0, 128, 0.2), rgba(0, 212, 255, 0.2));
+}
+
+.carousel-default-cover i {
+  font-size: 2.5rem;
+  color: var(--text-gray);
+}
+
+.carousel-playing-indicator {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 20px;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+}
+
+.carousel-playing-indicator span {
+  width: 4px;
+  background: var(--primary-pink);
+  border-radius: 2px;
+  animation: soundBars 0.5s ease infinite alternate;
+}
+
+.carousel-playing-indicator span:nth-child(1) {
+  height: 8px;
+  animation-delay: 0s;
+}
+
+.carousel-playing-indicator span:nth-child(2) {
+  height: 16px;
+  animation-delay: 0.2s;
+}
+
+.carousel-playing-indicator span:nth-child(3) {
+  height: 12px;
+  animation-delay: 0.4s;
+}
+
+@keyframes soundBars {
+  0% { height: 4px; }
+  100% { height: 16px; }
+}
+
+.carousel-card-info {
+  text-align: center;
+}
+
+.carousel-card-title {
+  font-weight: 600;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carousel-card-artist {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carousel-card.active .carousel-card-title,
+.carousel-card.active .carousel-card-artist {
+  color: white;
+}
+
+/* Carousel Navigation Buttons */
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gradient-1);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
+}
+
+.carousel-nav-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 0, 128, 0.6);
+}
+
+.carousel-nav-prev {
+  left: -20px;
+}
+
+.carousel-nav-next {
+  right: -20px;
+}
+
+/* Legacy Playlist Styles - keeping for backwards compatibility */
 .player-playlist {
   margin-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -3842,6 +4058,40 @@ select.form-control {
   .playlist-artist {
     font-size: 0.85rem;
   }
+
+  /* Carousel Responsive - Tablet */
+  .carousel-card {
+    width: 130px;
+  }
+
+  .carousel-card-cover {
+    border-radius: 10px;
+  }
+
+  .carousel-default-cover i {
+    font-size: 2rem;
+  }
+
+  .carousel-card-title {
+    font-size: 0.85rem;
+  }
+
+  .carousel-card-artist {
+    font-size: 0.75rem;
+  }
+
+  .carousel-nav-btn {
+    width: 35px;
+    height: 35px;
+  }
+
+  .carousel-nav-prev {
+    left: -15px;
+  }
+
+  .carousel-nav-next {
+    right: -15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3885,6 +4135,72 @@ select.form-control {
 
   .playlist-items {
     max-height: 200px;
+  }
+
+  /* Carousel Responsive - Mobile */
+  .player-carousel-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+  }
+
+  .player-carousel-section h4 {
+    font-size: 1rem;
+  }
+
+  .carousel-hint {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .carousel-container {
+    gap: 0.75rem;
+    padding: 0.75rem 0.25rem;
+  }
+
+  .carousel-card {
+    width: 110px;
+    padding: 0.5rem;
+    border-radius: 12px;
+  }
+
+  .carousel-card-cover {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+
+  .carousel-default-cover i {
+    font-size: 1.5rem;
+  }
+
+  .carousel-card-title {
+    font-size: 0.8rem;
+  }
+
+  .carousel-card-artist {
+    font-size: 0.7rem;
+  }
+
+  .carousel-playing-indicator {
+    padding: 3px 6px;
+    bottom: 5px;
+  }
+
+  .carousel-playing-indicator span {
+    width: 3px;
+  }
+
+  .carousel-nav-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+
+  .carousel-nav-prev {
+    left: -10px;
+  }
+
+  .carousel-nav-next {
+    right: -10px;
   }
 
   .playlist-item {

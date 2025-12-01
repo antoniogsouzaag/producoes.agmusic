@@ -664,7 +664,7 @@ export default function StudioPage() {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 Estúdio AG Music - Antônio Garcia. Todos os direitos reservados.</p>
+            <p>&copy; 2026 Estúdio AG Music - Antônio Garcia. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

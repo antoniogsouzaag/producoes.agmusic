@@ -609,7 +609,7 @@ export default function InteractiveLanding() {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 Antônio Garcia. Todos os direitos reservados.</p>
+            <p>&copy; 2026 Antônio Garcia. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
