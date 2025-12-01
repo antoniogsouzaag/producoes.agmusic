@@ -261,6 +261,10 @@ export default function Chatbot() {
             placeholder="Digite sua mensagem..."
             className="chatbot-input"
             disabled={isLoading}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
           />
           <button
             type="submit"
