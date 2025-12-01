@@ -63,40 +63,65 @@ export async function POST(request: NextRequest) {
 
     // Convert audio file to buffer
     console.log('[API /music/upload] Converting file to buffer...')
-    const audioBuffer = Buffer.from(await file.arrayBuffer())
+    let audioBuffer: Buffer;
+    try {
+      audioBuffer = Buffer.from(await file.arrayBuffer())
+    } catch (err) {
+      console.error('[API /music/upload] Error converting file to buffer:', err)
+      return NextResponse.json({ error: 'Erro ao processar o arquivo de áudio.' }, { status: 500 })
+    }
     
     // Upload audio to S3
     console.log('[API /music/upload] Uploading to S3...')
-    const cloud_storage_path = await uploadFile(audioBuffer, file.name, file.type)
-    console.log('[API /music/upload] Audio uploaded to:', cloud_storage_path)
+    let cloud_storage_path: string;
+    try {
+      cloud_storage_path = await uploadFile(audioBuffer, file.name, file.type)
+      console.log('[API /music/upload] Audio uploaded to:', cloud_storage_path)
+    } catch (err) {
+      console.error('[API /music/upload] S3 Upload Error:', err)
+      return NextResponse.json({ error: 'Erro ao enviar arquivo para o armazenamento.' }, { status: 502 })
+    }
     
     // Handle cover image upload if provided
     let cover_image_path = null
     if (coverImage && coverImage.type.startsWith('image/')) {
-      // Segurança: validar tamanho da imagem (máx 5MB)
-      const MAX_IMAGE_SIZE = 5 * 1024 * 1024
-      if (coverImage.size > MAX_IMAGE_SIZE) {
-        return NextResponse.json(
-          { error: 'Imagem de capa muito grande. Tamanho máximo: 5MB' },
-          { status: 413 }
-        )
+      try {
+        // Segurança: validar tamanho da imagem (máx 5MB)
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+        if (coverImage.size > MAX_IMAGE_SIZE) {
+          return NextResponse.json(
+            { error: 'Imagem de capa muito grande. Tamanho máximo: 5MB' },
+            { status: 413 }
+          )
+        }
+        console.log('[API /music/upload] Uploading cover image...')
+        const imageBuffer = Buffer.from(await coverImage.arrayBuffer())
+        cover_image_path = await uploadFile(imageBuffer, coverImage.name, coverImage.type)
+        console.log('[API /music/upload] Cover uploaded to:', cover_image_path)
+      } catch (err) {
+        console.error('[API /music/upload] Cover Upload Error:', err)
+        // Non-fatal error, continue without cover
       }
-      console.log('[API /music/upload] Uploading cover image...')
-      const imageBuffer = Buffer.from(await coverImage.arrayBuffer())
-      cover_image_path = await uploadFile(imageBuffer, coverImage.name, coverImage.type)
-      console.log('[API /music/upload] Cover uploaded to:', cover_image_path)
     }
     
     // Save metadata to database
     console.log('[API /music/upload] Saving to database...')
-    const music = await prisma.music.create({
-      data: {
-        title: sanitizedTitle,
-        artist: sanitizedArtist,
-        cloud_storage_path,
-        cover_image_path,
-      },
-    })
+    let music;
+    try {
+      music = await prisma.music.create({
+        data: {
+          title: sanitizedTitle,
+          artist: sanitizedArtist,
+          cloud_storage_path,
+          cover_image_path,
+        },
+      })
+    } catch (err) {
+      console.error('[API /music/upload] Database Write Error:', err)
+      // Try to clean up S3 file if DB write fails
+      // await deleteFile(cloud_storage_path) 
+      return NextResponse.json({ error: 'Erro ao salvar informações no banco de dados.' }, { status: 500 })
+    }
     
     console.log('[API /music/upload] Success! Music ID:', music.id)
     

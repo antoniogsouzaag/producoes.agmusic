@@ -102,7 +102,13 @@ export default function MusicManager({ onUploadSuccess }: MusicManagerProps) {
                 body: formData,
             })
 
-            const data = await response.json()
+            let data;
+            try {
+                data = await response.json()
+            } catch (e) {
+                console.error('Error parsing JSON response:', e)
+                throw new Error('Resposta inválida do servidor')
+            }
 
             if (response.ok) {
                 alert('Música adicionada com sucesso!')
@@ -115,11 +121,12 @@ export default function MusicManager({ onUploadSuccess }: MusicManagerProps) {
                 setIsOpen(false)
                 onUploadSuccess()
             } else {
+                console.error('Upload failed:', data)
                 setUploadError(data.error || 'Erro ao adicionar música. Tente novamente.')
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload error:', error)
-            setUploadError('Erro de conexão. Verifique sua internet e tente novamente.')
+            setUploadError(error.message || 'Erro de conexão. Verifique sua internet e tente novamente.')
         } finally {
             setIsUploading(false)
         }

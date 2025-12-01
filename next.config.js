@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removed 'output: standalone' - not compatible with Heroku buildpacks
+  output: 'standalone',
   images: {
     unoptimized: true,
     remotePatterns: [
