@@ -2,7 +2,8 @@
 set -e
 
 echo "🔄 Running database migrations..."
-npx prisma db push --skip-generate
+npx prisma generate
+npx prisma db push --accept-data-loss
 
 echo "✅ Migrations complete!"
 echo "🚀 Starting application..."
