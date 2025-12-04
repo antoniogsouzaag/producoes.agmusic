@@ -1964,14 +1964,10 @@ body.no-scroll {
 .studio-hero {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(
-      rgba(0, 0, 0, 0.6),
-      rgba(0, 0, 0, 0.7)
-    ),
-    url("/estudio/estudio-1.jpg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2184,6 +2180,85 @@ body.no-scroll {
   display: block;
 }
 
+/* Console Showcase - Layout lado a lado */
+.console-showcase {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  margin-top: 4rem;
+  padding: 3rem;
+  background: var(--dark-secondary);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.console-showcase-image {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 212, 255, 0.2);
+}
+
+.console-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.console-showcase-image:hover .console-img {
+  transform: scale(1.03);
+}
+
+.console-showcase-text h3 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  background: var(--gradient-2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.console-showcase-text p {
+  color: var(--text-gray);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+}
+
+.console-features {
+  list-style: none;
+  padding: 0;
+  margin-top: 1.5rem;
+}
+
+.console-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  color: var(--text-light);
+}
+
+.console-features li i {
+  color: var(--secondary-color);
+  font-size: 1rem;
+}
+
+/* Responsive Console Showcase */
+@media (max-width: 968px) {
+  .console-showcase {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .console-showcase-text h3 {
+    font-size: 1.6rem;
+  }
+}
+
 /* Studio Services Section */
 .studio-services {
   padding: 100px 0;
@@ -2301,6 +2376,252 @@ body.no-scroll {
 .gallery-overlay i {
   font-size: 3rem;
   color: white;
+}
+
+/* Gallery Modal Styles */
+.gallery-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.gallery-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10001;
+}
+
+.gallery-modal-close:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: rotate(90deg);
+}
+
+.gallery-modal-content {
+  position: relative;
+  width: 90vw;
+  height: 80vh;
+  max-width: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-modal-image {
+  object-fit: contain;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.gallery-modal-image.loading {
+  opacity: 0;
+}
+
+.gallery-modal-image.loaded {
+  opacity: 1;
+}
+
+.gallery-modal-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.loader-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.gallery-modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--text-gray);
+}
+
+.gallery-modal-error i {
+  font-size: 4rem;
+  opacity: 0.5;
+}
+
+.gallery-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10001;
+}
+
+.gallery-modal-nav:hover {
+  background: var(--gradient-1);
+  border-color: transparent;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-modal-prev {
+  left: 20px;
+}
+
+.gallery-modal-next {
+  right: 20px;
+}
+
+.gallery-modal-caption {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+}
+
+.gallery-modal-caption h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.gallery-modal-caption p {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+.gallery-modal-thumbnails {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  max-width: 90vw;
+  overflow-x: auto;
+}
+
+.gallery-thumbnail {
+  position: relative;
+  width: 70px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.gallery-thumbnail:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.gallery-thumbnail.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(255, 0, 128, 0.5);
+}
+
+.gallery-thumbnail img {
+  object-fit: cover;
+}
+
+/* Responsive Gallery Modal */
+@media (max-width: 768px) {
+  .gallery-modal-content {
+    width: 95vw;
+    height: 70vh;
+  }
+
+  .gallery-modal-close {
+    top: 15px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .gallery-modal-nav {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .gallery-modal-prev {
+    left: 10px;
+  }
+
+  .gallery-modal-next {
+    right: 10px;
+  }
+
+  .gallery-modal-thumbnails {
+    bottom: 10px;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .gallery-thumbnail {
+    width: 50px;
+    height: 35px;
+  }
+
+  .gallery-modal-caption {
+    bottom: -50px;
+  }
+
+  .gallery-modal-caption h3 {
+    font-size: 1.1rem;
+  }
 }
 
 /* CTA Section */

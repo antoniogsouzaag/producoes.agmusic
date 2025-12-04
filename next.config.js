@@ -11,6 +11,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'agmusic1.s3.us-east-1.amazonaws.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'thumbs.dreamstime.com'
       }
     ],
     formats: ['image/avif', 'image/webp'],

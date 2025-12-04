@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import AudioPlayer from './audio-player'
 import MusicManager from './music-manager'
 import Chatbot from './chatbot'
+import { getImagePath } from '@/lib/image-utils'
 
 interface Music {
   id: number
@@ -241,7 +242,7 @@ export default function InteractiveLanding() {
             <div className="logo">
               <div className="relative w-10 h-10">
                 <Image
-                  src="/logo.jpeg"
+                  src={getImagePath('logo')}
                   alt="Antônio Garcia Logo"
                   fill
                   className="logo-img"
@@ -298,7 +299,7 @@ export default function InteractiveLanding() {
           >
             <div className="hero-photo-frame">
               <Image
-                src="/foto-performance.png"
+                src={getImagePath('fotoPerformance')}
                 alt="Antônio Garcia tocando violão"
                 fill
                 className="hero-photo-img"
@@ -355,7 +356,7 @@ export default function InteractiveLanding() {
             <div className="sobre-image">
               <div className="sobre-image-frame">
                 <Image
-                  src="/foto_perfil.jpeg"
+                  src={getImagePath('fotoPerfil')}
                   alt="Antônio Garcia"
                   fill
                   className="sobre-image-img"
@@ -581,7 +582,7 @@ export default function InteractiveLanding() {
   {/* O container da Imagem (Primeiro item do Flexbox) */}
   <div className="relative w-10 h-10">
     <Image
-      src="/logo.jpeg"
+      src={getImagePath('logo')}
       alt="Antônio Garcia Logo"
       fill
       className="logo-img"
