@@ -220,6 +220,23 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     }
   }, [])
 
+  // Navigation functions for carousel
+  const scrollCarouselLeft = () => {
+    if (!carouselRef.current) return
+    carouselRef.current.scrollBy({
+      left: -300,
+      behavior: 'smooth'
+    })
+  }
+
+  const scrollCarouselRight = () => {
+    if (!carouselRef.current) return
+    carouselRef.current.scrollBy({
+      left: 300,
+      behavior: 'smooth'
+    })
+  }
+
   // Scroll to current track when it changes
   useEffect(() => {
     scrollToTrack(currentMusicIndex)
@@ -339,15 +356,26 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         <div className="player-carousel-section">
           <h4><i className="fas fa-headphones"></i> Minhas Produções ({filteredMusics.length})</h4>
           <p className="carousel-hint">
-            <i className="fas fa-hand-pointer"></i> Arraste para navegar
+            <i className="fas fa-hand-pointer"></i> Arraste ou use as setas para navegar
           </p>
-          <div 
-            ref={carouselRef}
-            className={`carousel-container ${isDragging ? 'dragging' : ''}`}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
+          
+          <div className="carousel-wrapper">
+            {/* Botão Anterior */}
+            <button 
+              className="carousel-nav-btn carousel-nav-left"
+              onClick={scrollCarouselLeft}
+              aria-label="Navegar para esquerda"
+            >
+              <i className="fas fa-chevron-left"></i>
+            </button>
+
+            <div 
+              ref={carouselRef}
+              className={`carousel-container ${isDragging ? 'dragging' : ''}`}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -385,6 +413,16 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+            {/* Botão Próximo */}
+            <button 
+              className="carousel-nav-btn carousel-nav-right"
+              onClick={scrollCarouselRight}
+              aria-label="Navegar para direita"
+            >
+              <i className="fas fa-chevron-right"></i>
+            </button>
           </div>
           
           {/* Carousel Navigation Arrows */}

@@ -223,7 +223,7 @@ export default function InteractiveLanding() {
     const element = document.getElementById(elementId)
     if (element) {
       const offsetTop = element.getBoundingClientRect().top + window.scrollY
-      const offset = 80 // Header height offset
+      const offset = elementId === 'sobre' ? 70 : 80 // Ajustado para enquadramento correto
       
       window.scrollTo({
         top: offsetTop - offset,
@@ -293,8 +293,8 @@ export default function InteractiveLanding() {
           <div 
             className="hero-photo"
             style={{ 
-              transform: `translateY(${scrollY * 0.3}px)`,
-              opacity: Math.max(0, 1 - (scrollY / 700))
+              transform: `translateY(${scrollY * 0.25}px)`,
+              opacity: Math.max(0, 1 - (scrollY / 800))
             }}
           >
             <div className="hero-photo-frame">
@@ -313,18 +313,19 @@ export default function InteractiveLanding() {
           <div 
             className="hero-content"
             style={{ 
-              transform: `translateY(${scrollY * 0.2}px)`,
-              opacity: Math.max(0, 1 - (scrollY / 1200))
+              transform: `translateY(${scrollY * 0.25}px)`,
+              opacity: Math.max(0, 1 - (scrollY / 800))
             }}
           >
             <h1 className="hero-brand">AG Music</h1>
+            <div className="hero-title-underline"></div>
             <h2 className="hero-name">Antônio Garcia</h2>
             <p className="hero-subtitle">
               Transforme Sua Música em Sucesso Profissional | Produção Musical Completa para Artistas e Cantores
               <br /><br />
               Da pré-produção à masterização, cuidamos de cada detalhe para que sua música alcance o padrão profissional que ela merece. Com mais de 15 anos de experiência, oferecemos gravação, mixagem e produção completa em diversos estilos musicais.
               <br /><br />
-              Seu som, sua identidade, seu sucesso - vamos criar juntos a música que vai marcar sua carreira.
+              <span className="hero-last-paragraph">Seu som, sua identidade, seu sucesso - vamos criar juntos a música que vai marcar sua carreira.</span>
             </p>
             <div className="hero-buttons">
               <button onClick={() => scrollToElement('contato')} className="btn btn-primary btn-compact">
@@ -370,21 +371,23 @@ export default function InteractiveLanding() {
               <div className="title-underline"></div>
               <p>Olá! Sou <strong>Antônio Garcia</strong>, produtor musical e engenheiro de áudio apaixonado por criar experiências sonoras únicas.</p>
               <p>Atuo há <strong>mais de 15 anos como músico profissional</strong> com bandas, cantores e vários projetos musicais. Fiz a produção do <strong>DVD Unisamba carreira solo</strong>, além de produções independentes e gravações musicais de diversos artistas em variados estilos, como <strong>rock, pop, pagode, sertanejo</strong>, entre outros.</p>
-              <p>Também atuo como <strong>professor de música há mais de 10 anos</strong>, com especialização em instrumentos de cordas, compartilhando minha paixão e conhecimento com novos músicos.</p>
-              <p>Meu objetivo é transformar sua visão musical em realidade, com profissionalismo, criatividade e atenção aos detalhes.</p>
-              <div className="sobre-stats">
-                <div className="stat-item">
-                  <span className="stat-number" data-target="15">0</span>
-                  <span className="stat-label">Anos de Experiência</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number" data-target="50">0</span>
-                  <span className="stat-label">Projetos</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number" data-target="10">0</span>
-                  <span className="stat-label">Anos Ensinando</span>
-                </div>
+              <p className="sobre-last-paragraphs">Também atuo como <strong>professor de música há mais de 10 anos</strong>, com especialização em instrumentos de cordas, compartilhando minha paixão e conhecimento com novos músicos.</p>
+              <p className="sobre-last-paragraphs">Meu objetivo é transformar sua visão musical em realidade, com profissionalismo, criatividade e atenção aos detalhes.</p>
+            </div>
+          </div>
+          <div className="sobre-stats-container">
+            <div className="sobre-stats">
+              <div className="stat-item">
+                <span className="stat-number" data-target="15">0</span>
+                <span className="stat-label">Anos de Experiência</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number" data-target="50">0</span>
+                <span className="stat-label">Projetos</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number" data-target="10">0</span>
+                <span className="stat-label">Anos Ensinando</span>
               </div>
             </div>
           </div>
