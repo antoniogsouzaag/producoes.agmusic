@@ -32,6 +32,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
+  const [hasDragged, setHasDragged] = useState(false)
 
   // Only keep tracks that look like they're coming from the AWS S3 bucket
   // This prevents any old/example tracks from appearing in the player's playlist.
@@ -165,6 +166,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!carouselRef.current) return
     setIsDragging(true)
+    setHasDragged(false)
     setStartX(e.pageX - carouselRef.current.offsetLeft)
     setScrollLeft(carouselRef.current.scrollLeft)
   }, [])
@@ -174,6 +176,10 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     e.preventDefault()
     const x = e.pageX - carouselRef.current.offsetLeft
     const walk = (x - startX) * 2
+    // Se moveu mais de 5px, considera como drag
+    if (Math.abs(walk) > 5) {
+      setHasDragged(true)
+    }
     carouselRef.current.scrollLeft = scrollLeft - walk
   }, [isDragging, startX, scrollLeft])
 
@@ -189,6 +195,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!carouselRef.current) return
     setIsDragging(true)
+    setHasDragged(false)
     setStartX(e.touches[0].pageX - carouselRef.current.offsetLeft)
     setScrollLeft(carouselRef.current.scrollLeft)
   }, [])
@@ -197,6 +204,10 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     if (!isDragging || !carouselRef.current) return
     const x = e.touches[0].pageX - carouselRef.current.offsetLeft
     const walk = (x - startX) * 2
+    // Se moveu mais de 5px, considera como drag
+    if (Math.abs(walk) > 5) {
+      setHasDragged(true)
+    }
     carouselRef.current.scrollLeft = scrollLeft - walk
   }, [isDragging, startX, scrollLeft])
 
@@ -385,7 +396,8 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
                 key={music.id}
                 className={`carousel-card ${index === currentMusicIndex ? 'active' : ''}`}
                 onClick={() => {
-                  if (!isDragging) {
+                  // Só executa click se não houver drag
+                  if (!hasDragged) {
                     setCurrentMusicIndex(index)
                     setIsPlaying(true)
                   }
@@ -424,30 +436,6 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
               <i className="fas fa-chevron-right"></i>
             </button>
           </div>
-          
-          {/* Carousel Navigation Arrows */}
-          <button 
-            className="carousel-nav-btn carousel-nav-prev"
-            onClick={() => {
-              if (carouselRef.current) {
-                carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' })
-              }
-            }}
-            aria-label="Anterior"
-          >
-            <i className="fas fa-chevron-left"></i>
-          </button>
-          <button 
-            className="carousel-nav-btn carousel-nav-next"
-            onClick={() => {
-              if (carouselRef.current) {
-                carouselRef.current.scrollBy({ left: 200, behavior: 'smooth' })
-              }
-            }}
-            aria-label="Próximo"
-          >
-            <i className="fas fa-chevron-right"></i>
-          </button>
         </div>
       )}
     </div>
