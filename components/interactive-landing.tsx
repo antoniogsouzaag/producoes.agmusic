@@ -383,7 +383,7 @@ export default function InteractiveLanding() {
               </div>
               <div className="stat-item">
                 <span className="stat-number" data-target="50">0</span>
-                <span className="stat-label">Projetos</span>
+                <span className="stat-label">Projetos Realizados</span>
               </div>
               <div className="stat-item">
                 <span className="stat-number" data-target="10">0</span>
