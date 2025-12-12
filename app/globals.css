@@ -4829,16 +4829,15 @@ select.form-control {
   /* Bloquear transições durante drag para melhor performance */
 }
 
-/* Prevenir seleção de imagens durante drag */
+/* Prevenir seleção de imagens durante drag - mas NÃO bloqueie pointer-events completamente */
 .carousel-container.dragging * {
-  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Reativar eventos de click após drag */
-.carousel-container:not(.dragging) .carousel-card {
-  pointer-events: auto;
+/* Durante drag, apenas as imagens devem ter pointer-events bloqueados */
+.carousel-container.dragging .carousel-card-cover img {
+  pointer-events: none;
 }
 
 .carousel-card {

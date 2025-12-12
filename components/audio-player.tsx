@@ -247,6 +247,9 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     // Se moveu mais de 8px OU demorou mais de 200ms, considera drag
     if (dragDistance.current > 8 || dragDuration > 200) {
       setHasDragged(true)
+    } else {
+      // Se foi um click rápido sem movimento, reseta imediatamente
+      setHasDragged(false)
     }
     
     setIsDragging(false)
@@ -260,12 +263,18 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       applyMomentum()
     }
     
-    // Reset após um curto delay para evitar cliques acidentais
-    setTimeout(() => {
-      setHasDragged(false)
+    // Reset após um curto delay APENAS se houve drag
+    if (dragDistance.current > 8) {
+      setTimeout(() => {
+        setHasDragged(false)
+        dragDistance.current = 0
+        velocityX.current = 0
+      }, 50)
+    } else {
+      // Reset imediato para clicks
       dragDistance.current = 0
       velocityX.current = 0
-    }, 100)
+    }
   }, [applyMomentum])
 
   const handleMouseLeave = useCallback(() => {
@@ -329,6 +338,9 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     // Se moveu mais de 10px OU demorou mais de 200ms, considera drag
     if (dragDistance.current > 10 || dragDuration > 200) {
       setHasDragged(true)
+    } else {
+      // Se foi um tap rápido sem movimento, reseta imediatamente
+      setHasDragged(false)
     }
     
     setIsDragging(false)
@@ -341,12 +353,18 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       applyMomentum()
     }
     
-    // Reset após delay para evitar cliques acidentais
-    setTimeout(() => {
-      setHasDragged(false)
+    // Reset após delay APENAS se houve drag
+    if (dragDistance.current > 10) {
+      setTimeout(() => {
+        setHasDragged(false)
+        dragDistance.current = 0
+        velocityX.current = 0
+      }, 100)
+    } else {
+      // Reset imediato para taps
       dragDistance.current = 0
       velocityX.current = 0
-    }, 150)
+    }
   }, [applyMomentum])
 
   // Scroll to current track in carousel
@@ -531,8 +549,8 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
                 key={music.id}
                 className={`carousel-card ${index === currentMusicIndex ? 'active' : ''}`}
                 onClick={(e) => {
-                  // Só executa click se não houver drag
-                  if (!hasDragged && dragDistance.current <= 8) {
+                  // Só executa click se não houver drag significativo
+                  if (!hasDragged && dragDistance.current < 5) {
                     e.stopPropagation()
                     setCurrentMusicIndex(index)
                     setIsPlaying(true)
