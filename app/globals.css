@@ -4817,6 +4817,8 @@ select.form-control {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  /* Permitir scroll vertical na página enquanto arrasta horizontalmente */
+  touch-action: pan-y pinch-zoom;
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -4827,12 +4829,19 @@ select.form-control {
   cursor: grabbing;
   scroll-behavior: auto;
   /* Bloquear transições durante drag para melhor performance */
+  /* Desabilitar scroll suave durante drag */
+  scroll-snap-type: none;
 }
 
 /* Prevenir seleção de imagens durante drag - mas NÃO bloqueie pointer-events completamente */
 .carousel-container.dragging * {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* Durante drag, desabilitar pointer-events nos cards para evitar clicks acidentais */
+.carousel-container.dragging .carousel-card {
+  pointer-events: none;
 }
 
 /* Durante drag, apenas as imagens devem ter pointer-events bloqueados */
