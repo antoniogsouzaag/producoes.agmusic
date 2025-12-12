@@ -4804,7 +4804,7 @@ select.form-control {
   gap: 1rem;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-behavior: smooth;
+  /* Removido scroll-behavior: smooth para não interferir com o drag */
   padding: 1.5rem 0.5rem;
   cursor: grab;
   -webkit-overflow-scrolling: touch;
@@ -4819,6 +4819,11 @@ select.form-control {
   -ms-user-select: none;
   /* Permitir scroll vertical na página enquanto arrasta horizontalmente */
   touch-action: pan-y pinch-zoom;
+  /* Prevenir highlight de tap no mobile */
+  -webkit-tap-highlight-color: transparent;
+  /* Suavizar renderização */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -4827,26 +4832,31 @@ select.form-control {
 
 .carousel-container.dragging {
   cursor: grabbing;
-  scroll-behavior: auto;
-  /* Bloquear transições durante drag para melhor performance */
   /* Desabilitar scroll suave durante drag */
   scroll-snap-type: none;
+  /* Força aceleração GPU durante drag */
+  transform: translateZ(0);
 }
 
-/* Prevenir seleção de imagens durante drag - mas NÃO bloqueie pointer-events completamente */
+/* Prevenir seleção de imagens durante drag */
 .carousel-container.dragging * {
   user-select: none;
   -webkit-user-select: none;
+  /* Prevenir ghost image durante drag */
+  -webkit-user-drag: none;
 }
 
 /* Durante drag, desabilitar pointer-events nos cards para evitar clicks acidentais */
 .carousel-container.dragging .carousel-card {
   pointer-events: none;
+  /* Desabilitar transições durante drag para melhor performance */
+  transition: none !important;
 }
 
 /* Durante drag, apenas as imagens devem ter pointer-events bloqueados */
 .carousel-container.dragging .carousel-card-cover img {
   pointer-events: none;
+  transition: none !important;
 }
 
 .carousel-card {
@@ -4856,7 +4866,10 @@ select.form-control {
   border-radius: 16px;
   padding: 0.85rem;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
   border: 2px solid transparent;
   user-select: none;
   -webkit-user-select: none;
@@ -4866,6 +4879,9 @@ select.form-control {
   -khtml-user-drag: none;
   -moz-user-drag: none;
   -o-user-drag: none;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Hover apenas quando não está fazendo drag */
@@ -5009,6 +5025,62 @@ select.form-control {
 .carousel-card.active .carousel-card-title,
 .carousel-card.active .carousel-card-artist {
   color: white;
+}
+
+/* Estados especiais do carrossel */
+
+/* Estado de momentum - suaviza a desaceleração */
+.carousel-container.momentum {
+  scroll-behavior: auto;
+}
+
+/* Melhor feedback visual ao arrastar */
+.carousel-container.dragging::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Animação suave ao soltar após drag */
+.carousel-card.releasing {
+  transition: transform 0.2s ease-out;
+}
+
+/* Responsividade adicional do carrossel */
+@media (max-width: 480px) {
+  .carousel-container {
+    gap: 0.75rem;
+    padding: 1rem 0.25rem;
+    /* Touch mais responsivo em mobile */
+    touch-action: pan-y;
+  }
+  
+  .carousel-card {
+    width: 140px;
+    padding: 0.65rem;
+  }
+  
+  .carousel-nav-btn {
+    width: 36px;
+    height: 36px;
+    display: none; /* Esconder botões de nav em mobile, usar touch */
+  }
+  
+  .carousel-hint {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .carousel-card {
+    width: 120px;
+    padding: 0.5rem;
+  }
 }
 
 /* Legacy Playlist Styles - keeping for backwards compatibility */
@@ -6027,12 +6099,20 @@ select.form-control {
   .carousel-container {
     gap: 0.6rem;
     padding: 1rem 0.25rem;
+    /* Melhorar experiência de touch em mobile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .carousel-card {
     width: 120px;
     padding: 0.6rem;
     border-radius: 12px;
+  }
+  
+  /* Esconder botões de navegação em telas pequenas - usar touch */
+  .carousel-nav-btn {
+    display: none;
   }
 
   .carousel-card-cover {
