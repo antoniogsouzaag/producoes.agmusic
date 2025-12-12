@@ -4846,14 +4846,14 @@ select.form-control {
   -webkit-user-drag: none;
 }
 
-/* Durante drag, desabilitar pointer-events nos cards para evitar clicks acidentais */
+/* Durante drag, desabilitar transições para melhor performance */
 .carousel-container.dragging .carousel-card {
-  pointer-events: none;
   /* Desabilitar transições durante drag para melhor performance */
   transition: none !important;
+  cursor: grabbing;
 }
 
-/* Durante drag, apenas as imagens devem ter pointer-events bloqueados */
+/* Durante drag, as imagens devem ter pointer-events bloqueados */
 .carousel-container.dragging .carousel-card-cover img {
   pointer-events: none;
   transition: none !important;
@@ -4890,12 +4890,6 @@ select.form-control {
   transform: translateY(-8px);
   border-color: rgba(255, 0, 128, 0.4);
   box-shadow: 0 8px 20px rgba(255, 0, 128, 0.3);
-}
-
-/* Durante drag, desabilitar hover e transições */
-.carousel-container.dragging .carousel-card {
-  transition: none;
-  cursor: grabbing;
 }
 
 /* Feedback visual ao clicar (active state) */
