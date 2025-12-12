@@ -380,16 +380,19 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         }
         momentumAnimation.current = requestAnimationFrame(applyMomentum)
       }
+      
+      // Reset hasDraggedRef após o tempo de bloqueio
+      setTimeout(() => {
+        hasDraggedRef.current = false
+      }, CAROUSEL_CONFIG.CLICK_BLOCK_TIME + 50)
+    } else {
+      // Não houve drag, resetar imediatamente para permitir clicks
+      hasDraggedRef.current = false
     }
     
     // Reset
     isHorizontalDragRef.current = null
     velocityTrackerRef.current = []
-    
-    // Delay para garantir que o click não seja disparado
-    setTimeout(() => {
-      hasDraggedRef.current = false
-    }, 50)
   }, [applyMomentum, calculateVelocity])
 
   const handleMouseLeave = useCallback(() => {
@@ -415,15 +418,18 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         }
         momentumAnimation.current = requestAnimationFrame(applyMomentum)
       }
+      
+      // Reset hasDraggedRef após o tempo de bloqueio
+      setTimeout(() => {
+        hasDraggedRef.current = false
+      }, CAROUSEL_CONFIG.CLICK_BLOCK_TIME + 50)
+    } else {
+      hasDraggedRef.current = false
     }
     
     // Reset
     isHorizontalDragRef.current = null
     velocityTrackerRef.current = []
-    
-    setTimeout(() => {
-      hasDraggedRef.current = false
-    }, 100)
   }, [applyMomentum, calculateVelocity])
 
   // Touch handlers for mobile - melhorados
@@ -528,45 +534,33 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
         }
         momentumAnimation.current = requestAnimationFrame(applyMomentum)
       }
+      
+      // Reset hasDraggedRef após o tempo de bloqueio
+      setTimeout(() => {
+        hasDraggedRef.current = false
+      }, CAROUSEL_CONFIG.CLICK_BLOCK_TIME + 50)
+    } else {
+      hasDraggedRef.current = false
     }
     
     // Reset
     isHorizontalDragRef.current = null
     velocityTrackerRef.current = []
-    
-    setTimeout(() => {
-      hasDraggedRef.current = false
-    }, 100)
   }, [applyMomentum, calculateVelocity])
 
-  // Handler para click nos cards do carousel - melhorado
+  // Handler para click nos cards do carousel - simplificado
   const handleCardClick = useCallback((e: React.MouseEvent, index: number) => {
     e.stopPropagation()
     
-    const now = Date.now()
-    
-    // Verifica se clicks estão bloqueados (após drag)
-    if (now < clickBlockedUntil.current) {
+    // Verifica se clicks estão bloqueados (após drag com movimento)
+    if (Date.now() < clickBlockedUntil.current) {
       e.preventDefault()
       return
     }
     
-    // Verifica se houve drag recente
+    // Verifica se houve drag com movimento real
     if (hasDraggedRef.current) {
       e.preventDefault()
-      return
-    }
-    
-    // Verifica se ainda está em modo de drag
-    if (isDraggingRef.current) {
-      e.preventDefault()
-      return
-    }
-    
-    // Verifica se o click foi muito rápido após o início do pointer
-    // (indica que pode ter sido um drag abortado)
-    const timeSincePointerDown = performance.now() - pointerDownTime.current
-    if (pointerDownTime.current > 0 && timeSincePointerDown < 50) {
       return
     }
     
