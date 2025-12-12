@@ -25,13 +25,13 @@ export const SITE_IMAGES = {
   fotoPerfil: { basePath: '/foto_perfil', extension: 'jpeg' as ImageExtension },
   
   // Imagens do estúdio (pasta /public/estudio)
-  estudioHeroBg: { basePath: '/estudio/hero-bg', extension: 'jpg' as ImageExtension },
+  estudioHeroBg: { basePath: '/estudio/hero-bg', extension: 'jpeg' as ImageExtension },
   estudio1: { basePath: '/estudio/estudio-1', extension: 'png' as ImageExtension },
   estudio2: { basePath: '/estudio/estudio-2', extension: 'jpg' as ImageExtension },
   estudio3: { basePath: '/estudio/estudio-3', extension: 'jpeg' as ImageExtension },
   console1: { basePath: '/estudio/console-1', extension: 'png' as ImageExtension },
   equipamentos: { basePath: '/estudio/equipamentos', extension: 'png' as ImageExtension },
-  salaGeral: { basePath: '/estudio/sala-geral', extension: 'jpg' as ImageExtension },
+  salaGeral: { basePath: '/estudio/sala-geral', extension: 'png' as ImageExtension },
 } as const;
 
 export type ImageKey = keyof typeof SITE_IMAGES;

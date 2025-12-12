@@ -266,7 +266,7 @@ export default function InteractiveLanding() {
               <li><button onClick={() => scrollToElement('servicos')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('portfolio')} className="nav-link">Portfólio</button></li>
               <li><a href="/estudio" className="nav-link" onClick={() => setIsMenuOpen(false)}>Estúdio</a></li>
-              <li><a href="https://agmusic.cloud/home-music" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
+              <li><a href="https://agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
               <li><a href="https://app.agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
               <li><button onClick={() => scrollToElement('contato')} className="nav-link">Contato</button></li>
             </ul>

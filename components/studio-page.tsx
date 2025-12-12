@@ -183,7 +183,7 @@ export default function StudioPage() {
               <li><button onClick={() => scrollToElement('equipamentos')} className="nav-link">Equipamentos</button></li>
               <li><button onClick={() => scrollToElement('servicos-estudio')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('galeria')} className="nav-link">Galeria</button></li>
-              <li><a href="https://agmusic.cloud/home-music" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
+              <li><a href="https://agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
               <li><a href="https://app.agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
               <li><button onClick={() => scrollToElement('contato-estudio')} className="nav-link">Contato</button></li>
             </ul>

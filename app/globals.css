@@ -4812,6 +4812,11 @@ select.form-control {
   -ms-overflow-style: none;
   /* Melhorar performance do scroll */
   will-change: scroll-position;
+  /* Prevenir seleção acidental de elementos */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -4821,9 +4826,19 @@ select.form-control {
 .carousel-container.dragging {
   cursor: grabbing;
   scroll-behavior: auto;
-  /* Evitar seleção de texto durante drag */
+  /* Bloquear transições durante drag para melhor performance */
+}
+
+/* Prevenir seleção de imagens durante drag */
+.carousel-container.dragging * {
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* Reativar eventos de click após drag */
+.carousel-container:not(.dragging) .carousel-card {
+  pointer-events: auto;
 }
 
 .carousel-card {
@@ -4836,14 +4851,32 @@ select.form-control {
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
   user-select: none;
+  -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* Prevenir arraste de imagem nativa */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
 }
 
-.carousel-card:hover {
+/* Hover apenas quando não está fazendo drag */
+.carousel-container:not(.dragging) .carousel-card:hover {
   background: rgba(255, 0, 128, 0.12);
   transform: translateY(-8px);
   border-color: rgba(255, 0, 128, 0.4);
   box-shadow: 0 8px 20px rgba(255, 0, 128, 0.3);
+}
+
+/* Durante drag, desabilitar hover e transições */
+.carousel-container.dragging .carousel-card {
+  transition: none;
+  cursor: grabbing;
+}
+
+/* Feedback visual ao clicar (active state) */
+.carousel-container:not(.dragging) .carousel-card:active {
+  transform: scale(0.98);
 }
 
 .carousel-card.active {
@@ -4868,10 +4901,24 @@ select.form-control {
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  /* Prevenir arraste nativo de imagens */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
 }
 
-.carousel-card:hover .carousel-card-cover img {
+/* Não aplicar hover durante drag */
+.carousel-container:not(.dragging) .carousel-card:hover .carousel-card-cover img {
   transform: scale(1.1);
+}
+
+/* Durante drag, desabilitar transições nas imagens */
+.carousel-container.dragging .carousel-card-cover img {
+  transition: none;
 }
 
 .carousel-default-cover {
