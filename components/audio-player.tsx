@@ -423,26 +423,23 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   }, [applyMomentum])
 
   // Handler para click nos cards do carousel - robusto e simples
-  const handleCardClick = useCallback((index: number) => {
-    // Verifica se clicks estão bloqueados (após drag com movimento)
-    if (Date.now() < clickBlockedUntil.current) {
-      return
+  // Permite duplo clique para tocar imediatamente
+  const handleCardClick = useCallback((index: number, event?: React.MouseEvent) => {
+    if (Date.now() < clickBlockedUntil.current) return;
+    if (hasDraggedRef.current || isDraggingRef.current) return;
+    if (dragDistanceRef.current > CAROUSEL_CONFIG.DRAG_THRESHOLD) return;
+    // Duplo clique sempre toca
+    if (event && event.detail === 2) {
+      setCurrentMusicIndex(index);
+      setIsPlaying(true);
+      return;
     }
-    
-    // Verifica se houve drag com movimento real
-    if (hasDraggedRef.current || isDraggingRef.current) {
-      return
+    // Clique simples só seleciona se não for o atual
+    if (index !== currentMusicIndex) {
+      setCurrentMusicIndex(index);
+      setIsPlaying(true);
     }
-    
-    // Verifica se a distância arrastada foi significativa
-    if (dragDistanceRef.current > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
-      return
-    }
-    
-    // Executa a seleção da música
-    setCurrentMusicIndex(index)
-    setIsPlaying(true)
-  }, [])
+  }, [currentMusicIndex])
 
   // Scroll to current track in carousel
   const scrollToTrack = useCallback((index: number) => {
@@ -460,22 +457,36 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     }
   }, [])
 
-  // Navigation functions for carousel
+  // Navigation functions for carousel (looping)
   const scrollCarouselLeft = () => {
-    if (!carouselRef.current) return
+    if (!carouselRef.current) return;
+    if (currentMusicIndex === 0) {
+      setCurrentMusicIndex(filteredMusics.length - 1);
+      setIsPlaying(true);
+      return;
+    }
     carouselRef.current.scrollBy({
       left: -300,
-      behavior: 'smooth'
-    })
-  }
+      behavior: 'smooth',
+    });
+    setCurrentMusicIndex((prev) => (prev > 0 ? prev - 1 : filteredMusics.length - 1));
+    setIsPlaying(true);
+  };
 
   const scrollCarouselRight = () => {
-    if (!carouselRef.current) return
+    if (!carouselRef.current) return;
+    if (currentMusicIndex === filteredMusics.length - 1) {
+      setCurrentMusicIndex(0);
+      setIsPlaying(true);
+      return;
+    }
     carouselRef.current.scrollBy({
       left: 300,
-      behavior: 'smooth'
-    })
-  }
+      behavior: 'smooth',
+    });
+    setCurrentMusicIndex((prev) => (prev < filteredMusics.length - 1 ? prev + 1 : 0));
+    setIsPlaying(true);
+  };
 
   // Scroll to current track when it changes
   useEffect(() => {
@@ -610,7 +621,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
               <i className="fas fa-chevron-left"></i>
             </button>
 
-            <div 
+            <div
               ref={carouselRef}
               className={`carousel-container ${isDragging ? 'dragging' : ''}`}
               onMouseDown={handleMouseDown}
@@ -624,35 +635,55 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
               role="listbox"
               aria-label="Lista de músicas"
               tabIndex={0}
-              style={{ 
+              aria-activedescendant={`carousel-card-${currentMusicIndex}`}
+              style={{
                 cursor: isDragging ? 'grabbing' : 'grab',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 MozUserSelect: 'none',
                 msUserSelect: 'none',
-                touchAction: 'pan-y pinch-zoom'
+                touchAction: 'pan-y pinch-zoom',
+                scrollSnapType: 'x mandatory',
+                outline: 'none',
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowLeft') {
+                  scrollCarouselLeft();
+                  e.preventDefault();
+                } else if (e.key === 'ArrowRight') {
+                  scrollCarouselRight();
+                  e.preventDefault();
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                  handleCardClick(currentMusicIndex);
+                  e.preventDefault();
+                }
               }}
             >
               {filteredMusics.map((music, index) => (
                 <div
                   key={music.id}
+                  id={`carousel-card-${index}`}
                   className={`carousel-card ${index === currentMusicIndex ? 'active' : ''}`}
-                  onClick={() => handleCardClick(index)}
+                  onClick={(e) => handleCardClick(index, e)}
+                  onDoubleClick={(e) => handleCardClick(index, e)}
                   onDragStart={(e) => e.preventDefault()}
                   role="option"
                   aria-selected={index === currentMusicIndex}
                   tabIndex={index === currentMusicIndex ? 0 : -1}
                   data-index={index}
+                  title={`${music.title} - ${music.artist}`}
+                  style={{ scrollSnapAlign: 'center' }}
                 >
                   <div className="carousel-card-cover">
                     {music.coverUrl ? (
-                      <img 
-                        src={music.coverUrl} 
+                      <img
+                        src={music.coverUrl}
                         alt={`Capa de ${music.title}`}
                         draggable={false}
                         loading="lazy"
                         onDragStart={(e) => e.preventDefault()}
-                        style={{ pointerEvents: 'none' }}
+                        style={{ pointerEvents: 'none', transition: index === currentMusicIndex ? 'transform 0.4s cubic-bezier(0.4,0,0.2,1)' : undefined, transform: index === currentMusicIndex ? 'scale(1.08)' : 'scale(1)' }}
+                        srcSet={music.coverUrl ? `${music.coverUrl} 1x, ${music.coverUrl.replace(/(\.[a-z]+)$/i, '@2x$1')} 2x` : undefined}
                       />
                     ) : (
                       <div className="carousel-default-cover">
@@ -660,10 +691,11 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
                       </div>
                     )}
                     {index === currentMusicIndex && isPlaying && (
-                      <div className="carousel-playing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                      <div className="carousel-playing-indicator" aria-label="Tocando agora">
+                        <span style={{ animation: 'soundBars 0.5s ease infinite alternate, pulse 1.2s infinite' }}></span>
+                        <span style={{ animation: 'soundBars 0.5s 0.2s ease infinite alternate, pulse 1.2s 0.2s infinite' }}></span>
+                        <span style={{ animation: 'soundBars 0.5s 0.4s ease infinite alternate, pulse 1.2s 0.4s infinite' }}></span>
+                        <span className="now-playing-badge">Now Playing</span>
                       </div>
                     )}
                   </div>
