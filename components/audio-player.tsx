@@ -17,17 +17,19 @@ interface AudioPlayerProps {
   onRefresh?: () => void
 }
 
-// Configurações do carrossel - simplificadas para maior robustez
+// Configurações do carrossel - otimizadas para melhor experiência
 const CAROUSEL_CONFIG = {
-  // Threshold mínimo de movimento para considerar drag (em pixels)
-  DRAG_THRESHOLD: 5,
+  // Threshold mínimo de movimento para considerar drag (em pixels) - aumentado para evitar clicks acidentais
+  DRAG_THRESHOLD: 8,
   // Multiplicador de velocidade para o arraste
-  DRAG_SPEED: 1.0,
+  DRAG_SPEED: 1.2,
   // Tempo de bloqueio de clicks após drag (ms)
-  CLICK_BLOCK_TIME: 150,
+  CLICK_BLOCK_TIME: 200,
   // Configurações de momentum
-  MOMENTUM_FRICTION: 0.92,
-  MOMENTUM_MIN_VELOCITY: 0.5,
+  MOMENTUM_FRICTION: 0.94,
+  MOMENTUM_MIN_VELOCITY: 0.3,
+  // Tempo máximo entre posições para calcular velocidade (ms)
+  MAX_VELOCITY_TIME: 100,
 }
 
 export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
@@ -39,24 +41,28 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
-  
+
   // Carousel drag state - usando refs para evitar re-renders durante drag
   const carouselRef = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
+  const isMouseDownRef = useRef(false) // Novo: rastrear se o mouse está pressionado
   const startXRef = useRef(0)
+  const startYRef = useRef(0) // Novo: para detectar scroll vertical
   const scrollLeftRef = useRef(0)
   const hasDraggedRef = useRef(false)
   const dragDistanceRef = useRef(0)
-  
+  const dragStartTime = useRef(0) // Novo: tempo de início do drag
+
   // Momentum animation
   const momentumAnimation = useRef<number | null>(null)
   const momentumVelocity = useRef(0)
   const lastPositions = useRef<Array<{ x: number; time: number }>>([])
-  
+
   // Controle de clicks
   const clickBlockedUntil = useRef<number>(0)
-  
-  const [isDragging, setIsDragging] = useState(false) // Apenas para CSS
+
+  // Estado visual do dragging (separado do ref para performance)
+  const [isDraggingVisual, setIsDraggingVisual] = useState(false)
 
   // Only keep tracks that look like they're coming from the AWS S3 bucket
   // This prevents any old/example tracks from appearing in the player's playlist.
@@ -129,21 +135,21 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   }, [volume])
 
   useEffect(() => {
-    // 1. Garante que se a lista encolheu ou está vazia, o índice seja 0.
+    // 1. Garante que se a lista encolheu ou está vazia, o índice seja 0.
     // If there are no valid AWS tracks, reset player state
     if (filteredMusics.length === 0 || currentMusicIndex >= filteredMusics.length) {
       setCurrentMusicIndex(0)
       setIsPlaying(false)
       // Pausa o áudio e reseta o tempo para o início
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.currentTime = 0
-      }
-    }
-    // 2. Se o índice atual for a última música e o `musics.length` mudar,
-    // ele reinicia o estado para evitar a exibição de dados incorretos.
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      }
+    }
+    // 2. Se o índice atual for a última música e o `musics.length` mudar,
+    // ele reinicia o estado para evitar a exibição de dados incorretos.
 
-  }, [musics, currentMusicIndex])
+  }, [musics, currentMusicIndex])
 
   // Cleanup momentum animation on unmount
   useEffect(() => {
@@ -160,32 +166,32 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       momentumVelocity.current = 0
       return
     }
-    
+
     // Parar se velocidade for muito baixa
     if (Math.abs(momentumVelocity.current) < CAROUSEL_CONFIG.MOMENTUM_MIN_VELOCITY) {
       momentumVelocity.current = 0
       momentumAnimation.current = null
       return
     }
-    
+
     // Aplicar velocidade
     const newScrollLeft = carouselRef.current.scrollLeft + momentumVelocity.current
     carouselRef.current.scrollLeft = newScrollLeft
-    
+
     // Aplicar fricção
     momentumVelocity.current *= CAROUSEL_CONFIG.MOMENTUM_FRICTION
-    
+
     // Verificar limites do scroll
     const maxScroll = carouselRef.current.scrollWidth - carouselRef.current.clientWidth
     const currentScroll = carouselRef.current.scrollLeft
-    
+
     // Parar no final/início
     if (currentScroll <= 0 || currentScroll >= maxScroll) {
       momentumVelocity.current = 0
       momentumAnimation.current = null
       return
     }
-    
+
     momentumAnimation.current = requestAnimationFrame(applyMomentum)
   }, [])
 
@@ -239,188 +245,242 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     setVolume(vol)
   }
 
-  // Carousel drag handlers - versão otimizada
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!carouselRef.current) return
-    
-    // Ignorar clicks em botões de navegação
-    if ((e.target as HTMLElement).closest('.carousel-nav-btn')) return
-    
-    // Cancelar momentum
-    cancelMomentum()
-    
-    // Prevenir comportamento padrão
-    e.preventDefault()
-    
-    isDraggingRef.current = true
-    hasDraggedRef.current = false
-    dragDistanceRef.current = 0
-    setIsDragging(true)
-    
-    startXRef.current = e.pageX
-    scrollLeftRef.current = carouselRef.current.scrollLeft
-    
-    // Limpar histórico de posições
-    lastPositions.current = [{ x: e.pageX, time: Date.now() }]
-    
-    // Adicionar cursor grabbing
-    carouselRef.current.style.cursor = 'grabbing'
-  }, [cancelMomentum])
+  // ============================================
+  // CAROUSEL DRAG HANDLERS - VERSÃO ROBUSTA
+  // ============================================
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !carouselRef.current) return
-    
-    e.preventDefault()
-    
-    const x = e.pageX
-    const walk = (startXRef.current - x) * CAROUSEL_CONFIG.DRAG_SPEED
-    
-    // Atualizar distância total arrastada
-    dragDistanceRef.current = Math.abs(x - startXRef.current)
-    
-    // Considera drag se moveu mais que o threshold
-    if (dragDistanceRef.current > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
-      hasDraggedRef.current = true
-    }
-    
-    // Manter histórico de posições (últimas 3 para cálculo de velocidade)
+  // Função auxiliar para calcular velocidade com base no histórico
+  const calculateVelocity = useCallback(() => {
+    if (lastPositions.current.length < 2) return 0
+
     const now = Date.now()
-    lastPositions.current.push({ x, time: now })
-    if (lastPositions.current.length > 3) {
-      lastPositions.current.shift()
-    }
-    
-    carouselRef.current.scrollLeft = scrollLeftRef.current + walk
-  }, [])
+    // Filtrar posições muito antigas
+    const recentPositions = lastPositions.current.filter(
+      p => now - p.time < CAROUSEL_CONFIG.MAX_VELOCITY_TIME
+    )
 
-  const handleMouseUp = useCallback(() => {
-    if (!carouselRef.current || !isDraggingRef.current) return
-    
-    const wasDragging = hasDraggedRef.current
-    
-    isDraggingRef.current = false
-    setIsDragging(false)
-    carouselRef.current.style.cursor = 'grab'
-    
-    // Se houve drag significativo, bloqueia clicks e aplica momentum
-    if (wasDragging && lastPositions.current.length >= 2) {
-      clickBlockedUntil.current = Date.now() + CAROUSEL_CONFIG.CLICK_BLOCK_TIME
-      
-      // Calcular velocidade baseado no último movimento
+    if (recentPositions.length < 2) {
       const latest = lastPositions.current[lastPositions.current.length - 1]
       const previous = lastPositions.current[lastPositions.current.length - 2]
       const timeDiff = latest.time - previous.time
-      
-      if (timeDiff > 0) {
-        const xDiff = latest.x - previous.x
-        momentumVelocity.current = (-xDiff / timeDiff) * 16 * CAROUSEL_CONFIG.DRAG_SPEED
-        
-        // Aplicar momentum se tiver velocidade suficiente
-        if (Math.abs(momentumVelocity.current) > 1) {
-          momentumAnimation.current = requestAnimationFrame(applyMomentum)
-        }
+      if (timeDiff <= 0) return 0
+      return -(latest.x - previous.x) / timeDiff * 16
+    }
+
+    const first = recentPositions[0]
+    const last = recentPositions[recentPositions.length - 1]
+    const timeDiff = last.time - first.time
+    if (timeDiff <= 0) return 0
+
+    return -(last.x - first.x) / timeDiff * 16
+  }, [])
+
+  // Finalizar drag e aplicar momentum
+  const finishDrag = useCallback(() => {
+    if (!carouselRef.current) return
+
+    const wasDragging = hasDraggedRef.current
+
+    // Resetar refs
+    isMouseDownRef.current = false
+    isDraggingRef.current = false
+    setIsDraggingVisual(false)
+
+    // Restaurar cursor
+    if (carouselRef.current) {
+      carouselRef.current.style.cursor = 'grab'
+    }
+
+    // Se houve drag significativo, bloquear clicks e aplicar momentum
+    if (wasDragging && lastPositions.current.length >= 2) {
+      clickBlockedUntil.current = Date.now() + CAROUSEL_CONFIG.CLICK_BLOCK_TIME
+
+      const velocity = calculateVelocity() * CAROUSEL_CONFIG.DRAG_SPEED
+
+      // Aplicar momentum se tiver velocidade suficiente
+      if (Math.abs(velocity) > 0.8) {
+        momentumVelocity.current = velocity
+        momentumAnimation.current = requestAnimationFrame(applyMomentum)
       }
     }
-    
+
     // Limpar histórico
     lastPositions.current = []
-    
-    // Reset do drag flag após um pequeno delay para garantir que o click não dispare
+
+    // Reset do drag flag após um delay
     setTimeout(() => {
       hasDraggedRef.current = false
-    }, CAROUSEL_CONFIG.CLICK_BLOCK_TIME + 10)
-  }, [applyMomentum])
+      dragDistanceRef.current = 0
+    }, CAROUSEL_CONFIG.CLICK_BLOCK_TIME + 50)
+  }, [applyMomentum, calculateVelocity])
 
-  const handleMouseLeave = useCallback(() => {
-    if (!carouselRef.current || !isDraggingRef.current) return
-    
-    // Simular mouseUp quando o mouse sai do elemento
-    handleMouseUp()
-  }, [handleMouseUp])
+  // Handler global para mousemove (no document)
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
+    if (!isMouseDownRef.current || !carouselRef.current) return
 
-  // Touch handlers for mobile - versão otimizada
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const x = e.pageX
+    const deltaX = x - startXRef.current
+
+    // Atualizar distância total arrastada
+    dragDistanceRef.current = Math.abs(deltaX)
+
+    // Considera drag se moveu mais que o threshold
+    if (dragDistanceRef.current > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
+      if (!isDraggingRef.current) {
+        isDraggingRef.current = true
+        hasDraggedRef.current = true
+        setIsDraggingVisual(true)
+
+        // Adicionar classes para prevenir seleção
+        document.body.style.userSelect = 'none'
+        document.body.style.cursor = 'grabbing'
+      }
+
+      // Calcular nova posição do scroll
+      const walk = -deltaX * CAROUSEL_CONFIG.DRAG_SPEED
+      carouselRef.current.scrollLeft = scrollLeftRef.current + walk
+    }
+
+    // Manter histórico de posições (últimas 5 para cálculo de velocidade mais preciso)
+    const now = Date.now()
+    lastPositions.current.push({ x, time: now })
+    if (lastPositions.current.length > 5) {
+      lastPositions.current.shift()
+    }
+  }, [])
+
+  // Handler global para mouseup (no document)
+  const handleGlobalMouseUp = useCallback(() => {
+    if (!isMouseDownRef.current) return
+
+    // Remover estilos globais
+    document.body.style.userSelect = ''
+    document.body.style.cursor = ''
+
+    finishDrag()
+  }, [finishDrag])
+
+  // Mouse handlers locais
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!carouselRef.current) return
-    
-    // Cancelar momentum
+
+    // Ignorar clicks em botões de navegação
+    if ((e.target as HTMLElement).closest('.carousel-nav-btn')) return
+
+    // Ignorar botão direito
+    if (e.button !== 0) return
+
+    // Cancelar momentum existente
     cancelMomentum()
-    
-    isDraggingRef.current = true
+
+    // Prevenir comportamento padrão para evitar seleção de texto
+    e.preventDefault()
+
+    // Inicializar estado do drag
+    isMouseDownRef.current = true
+    isDraggingRef.current = false
     hasDraggedRef.current = false
     dragDistanceRef.current = 0
-    setIsDragging(true)
-    
-    const touch = e.touches[0]
-    startXRef.current = touch.pageX
+    dragStartTime.current = Date.now()
+
+    startXRef.current = e.pageX
     scrollLeftRef.current = carouselRef.current.scrollLeft
-    
+
+    // Limpar histórico de posições
+    lastPositions.current = [{ x: e.pageX, time: Date.now() }]
+
+  }, [cancelMomentum])
+
+  // Adicionar/remover event listeners globais
+  useEffect(() => {
+    const handleMouseMoveGlobal = (e: MouseEvent) => handleGlobalMouseMove(e)
+    const handleMouseUpGlobal = () => handleGlobalMouseUp()
+
+    // Adicionar listeners no document para capturar movimento mesmo fora do carrossel
+    document.addEventListener('mousemove', handleMouseMoveGlobal)
+    document.addEventListener('mouseup', handleMouseUpGlobal)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMoveGlobal)
+      document.removeEventListener('mouseup', handleMouseUpGlobal)
+
+      // Cleanup de estilos
+      document.body.style.userSelect = ''
+      document.body.style.cursor = ''
+    }
+  }, [handleGlobalMouseMove, handleGlobalMouseUp])
+
+  // ============================================
+  // TOUCH HANDLERS PARA MOBILE
+  // ============================================
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!carouselRef.current) return
+
+    // Cancelar momentum
+    cancelMomentum()
+
+    const touch = e.touches[0]
+
+    // Inicializar estado
+    isMouseDownRef.current = true
+    isDraggingRef.current = false
+    hasDraggedRef.current = false
+    dragDistanceRef.current = 0
+    dragStartTime.current = Date.now()
+
+    startXRef.current = touch.pageX
+    startYRef.current = touch.pageY
+    scrollLeftRef.current = carouselRef.current.scrollLeft
+
     // Inicializar histórico de posições
     lastPositions.current = [{ x: touch.pageX, time: Date.now() }]
   }, [cancelMomentum])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDraggingRef.current || !carouselRef.current) return
-    
+    if (!isMouseDownRef.current || !carouselRef.current) return
+
     const touch = e.touches[0]
     const x = touch.pageX
-    const walk = (startXRef.current - x) * CAROUSEL_CONFIG.DRAG_SPEED
-    
-    // Atualizar distância total arrastada
-    dragDistanceRef.current = Math.abs(x - startXRef.current)
-    
-    // Considera drag se moveu mais que o threshold
-    if (dragDistanceRef.current > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
-      hasDraggedRef.current = true
-      // Prevenir scroll vertical apenas se for scroll horizontal significativo
+    const y = touch.pageY
+
+    const deltaX = x - startXRef.current
+    const deltaY = y - startYRef.current
+
+    // Detectar direção do movimento
+    const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+
+    // Atualizar distância total arrastada (apenas horizontal)
+    dragDistanceRef.current = Math.abs(deltaX)
+
+    // Considera drag se moveu mais que o threshold horizontalmente
+    if (dragDistanceRef.current > CAROUSEL_CONFIG.DRAG_THRESHOLD && isHorizontal) {
+      if (!isDraggingRef.current) {
+        isDraggingRef.current = true
+        hasDraggedRef.current = true
+        setIsDraggingVisual(true)
+      }
+
+      // Prevenir scroll vertical apenas se estivermos arrastando horizontalmente
       e.preventDefault()
+
+      // Calcular nova posição do scroll
+      const walk = -deltaX * CAROUSEL_CONFIG.DRAG_SPEED
+      carouselRef.current.scrollLeft = scrollLeftRef.current + walk
     }
-    
-    // Manter histórico de posições (últimas 3 para cálculo de velocidade)
+
+    // Manter histórico de posições
     const now = Date.now()
     lastPositions.current.push({ x, time: now })
-    if (lastPositions.current.length > 3) {
+    if (lastPositions.current.length > 5) {
       lastPositions.current.shift()
     }
-    
-    carouselRef.current.scrollLeft = scrollLeftRef.current + walk
   }, [])
 
   const handleTouchEnd = useCallback(() => {
-    if (!isDraggingRef.current || !carouselRef.current) return
-    
-    const wasDragging = hasDraggedRef.current
-    
-    isDraggingRef.current = false
-    setIsDragging(false)
-    
-    // Se houve drag, bloqueia clicks e aplica momentum
-    if (wasDragging && lastPositions.current.length >= 2) {
-      clickBlockedUntil.current = Date.now() + CAROUSEL_CONFIG.CLICK_BLOCK_TIME
-      
-      // Calcular velocidade baseado no último movimento
-      const latest = lastPositions.current[lastPositions.current.length - 1]
-      const previous = lastPositions.current[lastPositions.current.length - 2]
-      const timeDiff = latest.time - previous.time
-      
-      if (timeDiff > 0) {
-        const xDiff = latest.x - previous.x
-        momentumVelocity.current = (-xDiff / timeDiff) * 16 * CAROUSEL_CONFIG.DRAG_SPEED
-        
-        // Mobile é mais sensível ao momentum
-        if (Math.abs(momentumVelocity.current) > 0.5) {
-          momentumAnimation.current = requestAnimationFrame(applyMomentum)
-        }
-      }
-    }
-    
-    // Limpar histórico
-    lastPositions.current = []
-    
-    // Reset do drag flag após um pequeno delay
-    setTimeout(() => {
-      hasDraggedRef.current = false
-    }, CAROUSEL_CONFIG.CLICK_BLOCK_TIME + 10)
-  }, [applyMomentum])
+    if (!isMouseDownRef.current) return
+    finishDrag()
+  }, [finishDrag])
 
   // Handler para click nos cards do carousel - robusto e simples
   // Permite duplo clique para tocar imediatamente
@@ -518,13 +578,13 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
 
   return (
     <div className="audio-player-container">
-  <audio ref={audioRef} src={currentMusic?.url} />
-      
+      <audio ref={audioRef} src={currentMusic?.url} />
+
       {/* Cover Image */}
       <div className="player-cover-container">
         {currentMusic?.coverUrl ? (
-          <img 
-            src={currentMusic.coverUrl} 
+          <img
+            src={currentMusic.coverUrl}
             alt={`Capa de ${currentMusic.title}`}
             className="player-cover-image"
           />
@@ -539,7 +599,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
           </div>
         )}
       </div>
-      
+
       {/* Current Track Info */}
       <div className="player-track-info">
         <div className="track-title">{currentMusic?.title}</div>
@@ -567,20 +627,20 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
 
       {/* Controls */}
       <div className="player-controls">
-        <button 
-          onClick={handlePrevious} 
+        <button
+          onClick={handlePrevious}
           disabled={currentMusicIndex === 0}
           className="control-btn"
         >
           <i className="fas fa-step-backward"></i>
         </button>
-        
+
         <button onClick={handlePlayPause} className="control-btn play-btn">
           <i className={`fas fa-${isPlaying ? 'pause' : 'play'}`}></i>
         </button>
-        
-        <button 
-          onClick={handleNext} 
+
+        <button
+          onClick={handleNext}
           disabled={currentMusicIndex === filteredMusics.length - 1}
           className="control-btn"
         >
@@ -609,10 +669,10 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
           <p className="carousel-hint">
             <i className="fas fa-hand-pointer"></i> Arraste ou use as setas para navegar
           </p>
-          
+
           <div className="carousel-wrapper">
             {/* Botão Anterior */}
-            <button 
+            <button
               className="carousel-nav-btn carousel-nav-left"
               onClick={scrollCarouselLeft}
               aria-label="Navegar para esquerda"
@@ -623,11 +683,8 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
 
             <div
               ref={carouselRef}
-              className={`carousel-container ${isDragging ? 'dragging' : ''}`}
+              className={`carousel-container ${isDraggingVisual ? 'dragging' : ''}`}
               onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
@@ -637,14 +694,18 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
               tabIndex={0}
               aria-activedescendant={`carousel-card-${currentMusicIndex}`}
               style={{
-                cursor: isDragging ? 'grabbing' : 'grab',
+                cursor: isDraggingVisual ? 'grabbing' : 'grab',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
-                MozUserSelect: 'none',
-                msUserSelect: 'none',
-                touchAction: 'pan-y pinch-zoom',
-                scrollSnapType: 'x mandatory',
+                MozUserSelect: 'none' as 'none',
+                msUserSelect: 'none' as 'none',
+                // touchAction 'none' durante drag para evitar conflitos, 'pan-x' quando não está arrastando
+                touchAction: isDraggingVisual ? 'none' : 'pan-x',
+                // Desabilitar scroll-snap durante o arraste para movimento suave
+                scrollSnapType: isDraggingVisual ? 'none' : 'x proximity',
                 outline: 'none',
+                // Prevenir qualquer seleção de texto dentro do carrossel
+                WebkitTouchCallout: 'none' as 'none',
               }}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowLeft') {
@@ -708,7 +769,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
             </div>
 
             {/* Botão Próximo */}
-            <button 
+            <button
               className="carousel-nav-btn carousel-nav-right"
               onClick={scrollCarouselRight}
               aria-label="Navegar para direita"
