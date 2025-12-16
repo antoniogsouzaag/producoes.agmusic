@@ -51,8 +51,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   // Momentum animation
   const momentumAnimation = useRef<number | null>(null)
   const momentumVelocity = useRef(0)
-  const lastScrollLeft = useRef(0)
-  const lastTime = useRef(0)
+  const lastPositions = useRef<Array<{ x: number; time: number }>>([])
   
   // Controle de clicks
   const clickBlockedUntil = useRef<number>(0)
@@ -155,7 +154,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     }
   }, [])
 
-  // Função de momentum/inércia simplificada
+  // Função de momentum/inércia melhorada
   const applyMomentum = useCallback(() => {
     if (!carouselRef.current) {
       momentumVelocity.current = 0
@@ -170,7 +169,8 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     }
     
     // Aplicar velocidade
-    carouselRef.current.scrollLeft += momentumVelocity.current
+    const newScrollLeft = carouselRef.current.scrollLeft + momentumVelocity.current
+    carouselRef.current.scrollLeft = newScrollLeft
     
     // Aplicar fricção
     momentumVelocity.current *= CAROUSEL_CONFIG.MOMENTUM_FRICTION
@@ -179,6 +179,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     const maxScroll = carouselRef.current.scrollWidth - carouselRef.current.clientWidth
     const currentScroll = carouselRef.current.scrollLeft
     
+    // Parar no final/início
     if (currentScroll <= 0 || currentScroll >= maxScroll) {
       momentumVelocity.current = 0
       momentumAnimation.current = null
@@ -238,7 +239,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     setVolume(vol)
   }
 
-  // Carousel drag handlers - versão simplificada e robusta
+  // Carousel drag handlers - versão otimizada
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!carouselRef.current) return
     
@@ -248,7 +249,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     // Cancelar momentum
     cancelMomentum()
     
-    // Prevenir comportamento padrão de arraste de imagem
+    // Prevenir comportamento padrão
     e.preventDefault()
     
     isDraggingRef.current = true
@@ -258,8 +259,9 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     
     startXRef.current = e.pageX
     scrollLeftRef.current = carouselRef.current.scrollLeft
-    lastScrollLeft.current = carouselRef.current.scrollLeft
-    lastTime.current = Date.now()
+    
+    // Limpar histórico de posições
+    lastPositions.current = [{ x: e.pageX, time: Date.now() }]
     
     // Adicionar cursor grabbing
     carouselRef.current.style.cursor = 'grabbing'
@@ -281,14 +283,11 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       hasDraggedRef.current = true
     }
     
-    // Calcular velocidade
+    // Manter histórico de posições (últimas 3 para cálculo de velocidade)
     const now = Date.now()
-    const dt = now - lastTime.current
-    if (dt > 0) {
-      const newScrollLeft = scrollLeftRef.current + walk
-      momentumVelocity.current = (newScrollLeft - lastScrollLeft.current) / dt * 16
-      lastScrollLeft.current = newScrollLeft
-      lastTime.current = now
+    lastPositions.current.push({ x, time: now })
+    if (lastPositions.current.length > 3) {
+      lastPositions.current.shift()
     }
     
     carouselRef.current.scrollLeft = scrollLeftRef.current + walk
@@ -304,14 +303,27 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     carouselRef.current.style.cursor = 'grab'
     
     // Se houve drag significativo, bloqueia clicks e aplica momentum
-    if (wasDragging) {
+    if (wasDragging && lastPositions.current.length >= 2) {
       clickBlockedUntil.current = Date.now() + CAROUSEL_CONFIG.CLICK_BLOCK_TIME
       
-      // Aplicar momentum se tiver velocidade suficiente
-      if (Math.abs(momentumVelocity.current) > 1) {
-        momentumAnimation.current = requestAnimationFrame(applyMomentum)
+      // Calcular velocidade baseado no último movimento
+      const latest = lastPositions.current[lastPositions.current.length - 1]
+      const previous = lastPositions.current[lastPositions.current.length - 2]
+      const timeDiff = latest.time - previous.time
+      
+      if (timeDiff > 0) {
+        const xDiff = latest.x - previous.x
+        momentumVelocity.current = (-xDiff / timeDiff) * 16 * CAROUSEL_CONFIG.DRAG_SPEED
+        
+        // Aplicar momentum se tiver velocidade suficiente
+        if (Math.abs(momentumVelocity.current) > 1) {
+          momentumAnimation.current = requestAnimationFrame(applyMomentum)
+        }
       }
     }
+    
+    // Limpar histórico
+    lastPositions.current = []
     
     // Reset do drag flag após um pequeno delay para garantir que o click não dispare
     setTimeout(() => {
@@ -326,7 +338,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     handleMouseUp()
   }, [handleMouseUp])
 
-  // Touch handlers for mobile - versão simplificada
+  // Touch handlers for mobile - versão otimizada
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!carouselRef.current) return
     
@@ -341,8 +353,9 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     const touch = e.touches[0]
     startXRef.current = touch.pageX
     scrollLeftRef.current = carouselRef.current.scrollLeft
-    lastScrollLeft.current = carouselRef.current.scrollLeft
-    lastTime.current = Date.now()
+    
+    // Inicializar histórico de posições
+    lastPositions.current = [{ x: touch.pageX, time: Date.now() }]
   }, [cancelMomentum])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -362,14 +375,11 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       e.preventDefault()
     }
     
-    // Calcular velocidade
+    // Manter histórico de posições (últimas 3 para cálculo de velocidade)
     const now = Date.now()
-    const dt = now - lastTime.current
-    if (dt > 0) {
-      const newScrollLeft = scrollLeftRef.current + walk
-      momentumVelocity.current = (newScrollLeft - lastScrollLeft.current) / dt * 16
-      lastScrollLeft.current = newScrollLeft
-      lastTime.current = now
+    lastPositions.current.push({ x, time: now })
+    if (lastPositions.current.length > 3) {
+      lastPositions.current.shift()
     }
     
     carouselRef.current.scrollLeft = scrollLeftRef.current + walk
@@ -384,14 +394,27 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
     setIsDragging(false)
     
     // Se houve drag, bloqueia clicks e aplica momentum
-    if (wasDragging) {
+    if (wasDragging && lastPositions.current.length >= 2) {
       clickBlockedUntil.current = Date.now() + CAROUSEL_CONFIG.CLICK_BLOCK_TIME
       
-      // Mobile é mais sensível ao momentum
-      if (Math.abs(momentumVelocity.current) > 0.5) {
-        momentumAnimation.current = requestAnimationFrame(applyMomentum)
+      // Calcular velocidade baseado no último movimento
+      const latest = lastPositions.current[lastPositions.current.length - 1]
+      const previous = lastPositions.current[lastPositions.current.length - 2]
+      const timeDiff = latest.time - previous.time
+      
+      if (timeDiff > 0) {
+        const xDiff = latest.x - previous.x
+        momentumVelocity.current = (-xDiff / timeDiff) * 16 * CAROUSEL_CONFIG.DRAG_SPEED
+        
+        // Mobile é mais sensível ao momentum
+        if (Math.abs(momentumVelocity.current) > 0.5) {
+          momentumAnimation.current = requestAnimationFrame(applyMomentum)
+        }
       }
     }
+    
+    // Limpar histórico
+    lastPositions.current = []
     
     // Reset do drag flag após um pequeno delay
     setTimeout(() => {
