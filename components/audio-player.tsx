@@ -765,7 +765,6 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
                           <span style={{ animation: 'soundBars 0.5s ease infinite alternate, pulse 1.2s infinite' }}></span>
                           <span style={{ animation: 'soundBars 0.5s 0.2s ease infinite alternate, pulse 1.2s 0.2s infinite' }}></span>
                           <span style={{ animation: 'soundBars 0.5s 0.4s ease infinite alternate, pulse 1.2s 0.4s infinite' }}></span>
-                          <span className="now-playing-badge">Now Playing</span>
                         </div>
                       )}
                     </div>
