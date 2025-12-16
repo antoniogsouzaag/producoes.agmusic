@@ -4979,10 +4979,11 @@ select.form-control {
 }
 
 .carousel-card.active {
-  background: var(--gradient-1);
-  border-color: var(--primary-pink);
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 50%, #ffa500 100%) !important;
+  border-color: #ff6b00 !important;
   transform: translateY(-10px) scale(1.08);
-  box-shadow: 0 12px 35px rgba(255, 0, 128, 0.5);
+  box-shadow: 0 12px 35px rgba(255, 107, 0, 0.6), 0 0 20px rgba(255, 140, 0, 0.4) !important;
+  z-index: 5;
 }
 
 .carousel-card-cover {
@@ -5188,14 +5189,25 @@ select.form-control {
 @media (max-width: 480px) {
   .carousel-container {
     gap: 0.75rem;
-    padding: 1rem 0.25rem;
-    /* Touch mais responsivo em mobile */
-    touch-action: pan-y;
+    padding: 1rem 0.5rem;
+    /* Touch horizontal para carrossel */
+    touch-action: pan-x pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 
   .carousel-card {
-    width: 140px;
-    padding: 0.65rem;
+    width: 130px;
+    min-width: 130px;
+    max-width: 130px;
+    padding: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  .carousel-card-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 100px;
+    max-height: 120px;
   }
 
   .carousel-nav-btn {
@@ -5223,18 +5235,35 @@ select.form-control {
 }
 
 @media (max-width: 360px) {
+  .carousel-container {
+    touch-action: pan-x pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.6rem;
+    padding: 0.75rem 0.4rem;
+  }
+
   .carousel-card {
-    width: 120px;
-    padding: 0.5rem;
-    gap: 0.5rem;
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+    padding: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  .carousel-card-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 75px;
+    max-height: 88px;
+    overflow: hidden;
   }
 
   .carousel-card-title {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .carousel-card-artist {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 }
 
@@ -6141,25 +6170,35 @@ select.form-control {
   }
 
   /* Carousel Responsive - Tablet */
+  .carousel-container {
+    touch-action: pan-x pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 0.8rem;
+    padding: 1rem 0.5rem;
+  }
+
   .carousel-card {
-    width: 130px;
+    width: 135px;
+    min-width: 135px;
+    max-width: 135px;
+    padding: 0.7rem;
+    flex-shrink: 0;
+    scroll-snap-align: center;
   }
 
   .carousel-card-cover {
     border-radius: 10px;
+    margin-bottom: 0.6rem;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 95px;
+    max-height: 115px;
+    overflow: hidden;
   }
 
   .carousel-default-cover i {
     font-size: 2rem;
-  }
-
-  .carousel-card {
-    width: 140px;
-    padding: 0.7rem;
-  }
-
-  .carousel-card-cover {
-    margin-bottom: 0.6rem;
   }
 
   .carousel-card-title {
@@ -6264,17 +6303,20 @@ select.form-control {
   }
 
   .carousel-container {
-    gap: 0.6rem;
-    padding: 1rem 0.25rem;
-    /* Melhorar experiência de touch em mobile */
-    touch-action: pan-y;
+    gap: 0.75rem;
+    padding: 1rem 0.5rem;
+    /* Touch horizontal para carrossel */
+    touch-action: pan-x pinch-zoom;
     -webkit-overflow-scrolling: touch;
   }
 
   .carousel-card {
-    width: 120px;
-    padding: 0.6rem;
+    width: 115px;
+    min-width: 115px;
+    max-width: 115px;
+    padding: 0.55rem;
     border-radius: 12px;
+    flex-shrink: 0;
   }
 
   /* Esconder botões de navegação em telas pequenas - usar touch */
@@ -6285,6 +6327,11 @@ select.form-control {
   .carousel-card-cover {
     border-radius: 10px;
     margin-bottom: 0.5rem;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 85px;
+    max-height: 100px;
+    overflow: hidden;
   }
 
   .carousel-default-cover i {

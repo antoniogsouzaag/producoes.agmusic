@@ -720,52 +720,62 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
                 }
               }}
             >
-              {filteredMusics.map((music, index) => (
-                <div
-                  key={music.id}
-                  id={`carousel-card-${index}`}
-                  className={`carousel-card ${index === currentMusicIndex ? 'active' : ''}`}
-                  onClick={(e) => handleCardClick(index, e)}
-                  onDoubleClick={(e) => handleCardClick(index, e)}
-                  onDragStart={(e) => e.preventDefault()}
-                  role="option"
-                  aria-selected={index === currentMusicIndex}
-                  tabIndex={index === currentMusicIndex ? 0 : -1}
-                  data-index={index}
-                  title={`${music.title} - ${music.artist}`}
-                  style={{ scrollSnapAlign: 'center' }}
-                >
-                  <div className="carousel-card-cover">
-                    {music.coverUrl ? (
-                      <img
-                        src={music.coverUrl}
-                        alt={`Capa de ${music.title}`}
-                        draggable={false}
-                        loading="lazy"
-                        onDragStart={(e) => e.preventDefault()}
-                        style={{ pointerEvents: 'none', transition: index === currentMusicIndex ? 'transform 0.4s cubic-bezier(0.4,0,0.2,1)' : undefined, transform: index === currentMusicIndex ? 'scale(1.08)' : 'scale(1)' }}
-                        srcSet={music.coverUrl ? `${music.coverUrl} 1x, ${music.coverUrl.replace(/(\.[a-z]+)$/i, '@2x$1')} 2x` : undefined}
-                      />
-                    ) : (
-                      <div className="carousel-default-cover">
-                        <i className="fas fa-music"></i>
-                      </div>
-                    )}
-                    {index === currentMusicIndex && isPlaying && (
-                      <div className="carousel-playing-indicator" aria-label="Tocando agora">
-                        <span style={{ animation: 'soundBars 0.5s ease infinite alternate, pulse 1.2s infinite' }}></span>
-                        <span style={{ animation: 'soundBars 0.5s 0.2s ease infinite alternate, pulse 1.2s 0.2s infinite' }}></span>
-                        <span style={{ animation: 'soundBars 0.5s 0.4s ease infinite alternate, pulse 1.2s 0.4s infinite' }}></span>
-                        <span className="now-playing-badge">Now Playing</span>
-                      </div>
-                    )}
+              {filteredMusics.map((music, index) => {
+                const isActive = index === currentMusicIndex;
+                return (
+                  <div
+                    key={music.id}
+                    id={`carousel-card-${index}`}
+                    className={`carousel-card ${isActive ? 'active' : ''}`}
+                    onClick={(e) => handleCardClick(index, e)}
+                    onDoubleClick={(e) => handleCardClick(index, e)}
+                    onDragStart={(e) => e.preventDefault()}
+                    role="option"
+                    aria-selected={isActive}
+                    tabIndex={isActive ? 0 : -1}
+                    data-index={index}
+                    data-active={isActive}
+                    title={`${music.title} - ${music.artist}`}
+                    style={{ scrollSnapAlign: 'center' }}
+                  >
+                    <div className="carousel-card-cover">
+                      {music.coverUrl ? (
+                        <img
+                          src={music.coverUrl}
+                          alt={`Capa de ${music.title}`}
+                          draggable={false}
+                          loading="lazy"
+                          onDragStart={(e) => e.preventDefault()}
+                          style={{
+                            pointerEvents: 'none',
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.3s ease',
+                            transform: isActive ? 'scale(1.05)' : 'scale(1)'
+                          }}
+                        />
+                      ) : (
+                        <div className="carousel-default-cover">
+                          <i className="fas fa-music"></i>
+                        </div>
+                      )}
+                      {isActive && isPlaying && (
+                        <div className="carousel-playing-indicator" aria-label="Tocando agora">
+                          <span style={{ animation: 'soundBars 0.5s ease infinite alternate, pulse 1.2s infinite' }}></span>
+                          <span style={{ animation: 'soundBars 0.5s 0.2s ease infinite alternate, pulse 1.2s 0.2s infinite' }}></span>
+                          <span style={{ animation: 'soundBars 0.5s 0.4s ease infinite alternate, pulse 1.2s 0.4s infinite' }}></span>
+                          <span className="now-playing-badge">Now Playing</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="carousel-card-info">
+                      <div className="carousel-card-title">{music.title}</div>
+                      <div className="carousel-card-artist">{music.artist}</div>
+                    </div>
                   </div>
-                  <div className="carousel-card-info">
-                    <div className="carousel-card-title">{music.title}</div>
-                    <div className="carousel-card-artist">{music.artist}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Botão Próximo */}
