@@ -2784,7 +2784,7 @@ body.no-scroll {
 }
 
 .admin-controls {
-  display: flex;
+  display: none;
   justify-content: center;
   margin-bottom: 2rem;
 }
