@@ -28,8 +28,7 @@ export default function InteractiveLanding() {
     setIsLoadingMusics(true)
     try {
       const response = await fetch('/api/music/list', {
-        // Performance: adicionar cache de 60 segundos
-        next: { revalidate: 60 }
+        cache: 'no-store'
       })
       
       if (!response.ok) {

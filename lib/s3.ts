@@ -1,83 +1,82 @@
 
-import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3"
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
-import { createS3Client, getBucketConfig } from "./aws-config"
-
-const s3Client = createS3Client()
-const { bucketName, folderPrefix } = getBucketConfig()
+import { supabaseAdmin, getStorageBucket } from "./supabase"
 
 export async function uploadFile(buffer: Buffer, fileName: string, contentType: string = 'audio/mpeg') {
   try {
+    const bucket = getStorageBucket()
     // Sanitize file name to prevent path traversal and encoding issues
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const key = `${folderPrefix}music/${Date.now()}-${sanitizedFileName}`
-    
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        Body: buffer,
-        ContentType: contentType,
-      })
-    )
-    
+    const key = `music/${Date.now()}-${sanitizedFileName}`
+
+    const { error } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(key, buffer, { contentType, upsert: false })
+
+    if (error) {
+      console.error('Supabase upload error:', error)
+      throw new Error(error.message)
+    }
+
     return key
   } catch (error) {
-    console.error('S3 upload error:', error)
-    throw new Error('Failed to upload file to storage. Please check AWS credentials and bucket configuration.')
+    console.error('Storage upload error:', error)
+    throw new Error('Failed to upload file to storage. Please check Supabase configuration.')
   }
 }
 
-// Gera URL pública direta para o bucket (bucket é público)
+// Gera URL pública direta (bucket deve ser público no Supabase)
 export function getPublicUrl(key: string): string {
-  const region = process.env.AWS_REGION || 'us-east-1'
-  return `https://${bucketName}.s3.${region}.amazonaws.com/${key}`
+  const bucket = getStorageBucket()
+  const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(key)
+  return data.publicUrl
 }
 
-// Mantém a função getFileUrl para compatibilidade, mas usa URL pública
-export async function getFileUrl(key: string, expiresIn: number = 3600) {
-  // Como o bucket é público, usamos URL direta (mais rápido e sem expiração)
+// Mantém a função getFileUrl para compatibilidade
+export async function getFileUrl(key: string, _expiresIn: number = 3600) {
   return getPublicUrl(key)
 }
 
-// Função alternativa para gerar URL assinada (caso precise no futuro)
+// URL assinada com expiração (caso o bucket seja privado)
 export async function getSignedFileUrl(key: string, expiresIn: number = 3600) {
   try {
-    const command = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: key,
-    })
-    
-    const url = await getSignedUrl(s3Client, command, { expiresIn })
-    return url
+    const bucket = getStorageBucket()
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .createSignedUrl(key, expiresIn)
+
+    if (error || !data?.signedUrl) {
+      throw new Error(error?.message || 'Failed to generate signed URL')
+    }
+    return data.signedUrl
   } catch (error) {
-    console.error('S3 getSignedFileUrl error:', error)
-    throw new Error('Failed to generate file URL. Please check AWS credentials and bucket configuration.')
+    console.error('Supabase getSignedFileUrl error:', error)
+    throw new Error('Failed to generate file URL. Please check Supabase configuration.')
   }
 }
 
 export async function deleteFile(key: string) {
   try {
-    await s3Client.send(
-      new DeleteObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-      })
-    )
+    const bucket = getStorageBucket()
+    const { error } = await supabaseAdmin.storage.from(bucket).remove([key])
+    if (error) {
+      console.warn(`Failed to delete file from storage: ${key}`, error.message)
+    }
   } catch (error) {
-    console.error('S3 delete error:', error)
-    // Don't throw error on delete failure to prevent blocking database cleanup
-    console.warn(`Failed to delete file from S3: ${key}`)
+    console.error('Storage delete error:', error)
+    // Don't throw to prevent blocking database cleanup
+    console.warn(`Failed to delete file from storage: ${key}`)
   }
 }
 
 export async function fileExists(key: string) {
   try {
-    const command = new HeadObjectCommand({ Bucket: bucketName, Key: key })
-    await s3Client.send(command)
-    return true
-  } catch (error: any) {
-    // If the object is not found, S3 will return a 404-like error. Treat any error as non-existence.
+    const bucket = getStorageBucket()
+    const folder = key.substring(0, key.lastIndexOf('/'))
+    const name = key.substring(key.lastIndexOf('/') + 1)
+    const { data, error } = await supabaseAdmin.storage.from(bucket).list(folder, { search: name })
+    if (error || !data) return false
+    return data.some((f) => f.name === name)
+  } catch {
     return false
   }
 }

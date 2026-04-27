@@ -28,7 +28,7 @@ export async function GET() {
         console.log(`[API /music/list] Music ${music.id}: ${music.title} -> ${url}`)
         
         return {
-          id: String(music.id),
+          id: music.id,
           title: music.title,
           artist: music.artist,
           url: url,

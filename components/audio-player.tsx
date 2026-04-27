@@ -64,10 +64,9 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
   // Estado visual do dragging (separado do ref para performance)
   const [isDraggingVisual, setIsDraggingVisual] = useState(false)
 
-  // Only keep tracks that look like they're coming from the AWS S3 bucket
-  // This prevents any old/example tracks from appearing in the player's playlist.
-  const AWS_URL_PATTERN = /amazonaws\.com|s3\.amazonaws\.com|s3\./i
-  const filteredMusics = musics.filter((m) => !!m.url && AWS_URL_PATTERN.test(m.url))
+  // Only keep tracks with a valid storage URL (Supabase Storage)
+  const STORAGE_URL_PATTERN = /supabase\.co\/storage|supabase\.in\/storage/i
+  const filteredMusics = musics.filter((m) => !!m.url && STORAGE_URL_PATTERN.test(m.url))
 
   const currentMusic = filteredMusics[currentMusicIndex]
 
@@ -565,7 +564,7 @@ export default function AudioPlayer({ musics, onRefresh }: AudioPlayerProps) {
       <div className="portfolio-player">
         <i className="fas fa-music"></i>
         <h3>Portfólio Musical</h3>
-        <p>Nenhuma música disponível do bucket AWS no momento.</p>
+        <p>Nenhuma música disponível no momento.</p>
         <p className="text-sm opacity-75">Verifique se o upload foi concluído ou atualize a lista.</p>
         {onRefresh && (
           <button onClick={onRefresh} className="btn btn-primary" style={{ marginTop: '1rem' }}>
