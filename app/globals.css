@@ -4414,7 +4414,7 @@ select.form-control {
 }
 
 .upload-btn {
-  display: inline-block;
+  display: flex;
   background: var(--gradient-1);
   color: white;
   border: none;
