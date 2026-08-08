@@ -13,25 +13,27 @@ export const metadata = {
   // e as imagens sociais saíam com URL relativa que rede nenhuma consegue
   // buscar.
   metadataBase: new URL(SITE_URL),
-  title: 'Antônio Garcia | Produtor Musical',
-  description: 'Antônio Garcia - Produtor Musical | Produção, Gravação, Mixagem e Masterização',
-  keywords: 'produtor musical, mixagem, masterização, gravação, antonio garcia, música',
+  // Padrão do site inteiro, e a raiz é o estúdio. A página do produtor
+  // sobrescreve título e descrição em app/bio/page.tsx.
+  title: 'AG Music | Estúdio de Gravação, Mixagem e Masterização',
+  description: 'Estúdio AG Music: gravação, mixagem, masterização e produção musical completa, em ambiente tratado acusticamente.',
+  keywords: 'estúdio de gravação, produção musical, mixagem, masterização, gravação profissional, ag music',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Antônio Garcia | Produtor Musical',
-    description: 'Transformando ideias em música profissional',
+    title: 'AG Music | Estúdio de Gravação, Mixagem e Masterização',
+    description: 'Gravação, mixagem, masterização e produção musical completa.',
     type: 'website',
     locale: 'pt_BR',
     url: SITE_URL,
     siteName: 'AG Music',
-    images: [{ url: '/foto-performance.png', width: 1200, height: 630, alt: 'Antônio Garcia, produtor musical' }],
+    images: [{ url: '/foto-performance.png', width: 1200, height: 630, alt: 'Estúdio AG Music' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Antônio Garcia | Produtor Musical',
-    description: 'Produção, gravação, mixagem e masterização.',
+    title: 'AG Music | Estúdio de Gravação, Mixagem e Masterização',
+    description: 'Gravação, mixagem, masterização e produção musical completa.',
     images: ['/foto-performance.png'],
   },
   robots: {
@@ -89,7 +91,8 @@ const jsonLd = {
       '@id': `${SITE_URL}/#person`,
       name: 'Antônio Garcia',
       jobTitle: 'Produtor musical',
-      url: SITE_URL,
+      // A página da pessoa é /bio; a raiz descreve o estúdio.
+      url: `${SITE_URL}/bio`,
       image: `${SITE_URL}/foto_perfil.jpeg`,
       knowsAbout: ['Produção musical', 'Mixagem', 'Masterização', 'Gravação'],
       sameAs: ['https://www.instagram.com/antonio0_/'],

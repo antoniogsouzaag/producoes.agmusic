@@ -6,8 +6,56 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import AudioPlayer from './audio-player'
 import MusicManager from './music-manager'
-import Chatbot from './chatbot'
 import { getImagePath } from '@/lib/image-utils'
+import { ServiceCarousel, type ServiceCarouselItem } from '@/components/ui/service-carousel'
+
+// Os serviços não têm foto própria, então cada card usa uma imagem do estúdio.
+// É o material real do lugar onde o serviço acontece — mais honesto que banco
+// de imagem, e o véu por cima deixa o texto legível de qualquer jeito.
+const SERVICOS: ServiceCarouselItem[] = [
+  {
+    id: 'producao',
+    title: 'Produção Musical',
+    description: 'Criação completa de arranjos, programação de instrumentos e direção artística para seu projeto musical.',
+    icon: 'fas fa-music',
+    image: getImagePath('estudio1'),
+  },
+  {
+    id: 'gravacao',
+    title: 'Gravação Profissional',
+    description: 'Gravação de voz e instrumentos em estúdio com equipamentos de alta qualidade e acústica tratada.',
+    icon: 'fas fa-microphone-alt',
+    image: getImagePath('estudio2'),
+  },
+  {
+    id: 'mixagem',
+    title: 'Mixagem & Masterização',
+    description: 'Balanceamento profissional e finalização da sua música para streaming, rádio e outras plataformas.',
+    icon: 'fas fa-sliders-h',
+    image: getImagePath('console1'),
+  },
+  {
+    id: 'edicao',
+    title: 'Edição & Pós-Produção',
+    description: 'Edição precisa de áudio, correção de timing, afinação e limpeza de ruídos indesejados.',
+    icon: 'fas fa-cut',
+    image: getImagePath('estudio3'),
+  },
+  {
+    id: 'instrumentos',
+    title: 'Gravação de Instrumentos',
+    description: 'Sessões com músicos profissionais para complementar seu projeto com performances de alta qualidade.',
+    icon: 'fas fa-guitar',
+    image: getImagePath('equipamentos'),
+  },
+  {
+    id: 'consultoria',
+    title: 'Consultoria Musical',
+    description: 'Orientação completa sobre produção, desde a pré-produção até estratégias de lançamento.',
+    icon: 'fas fa-chalkboard-teacher',
+    image: getImagePath('salaGeral'),
+  },
+]
 
 interface Music {
   id: number
@@ -249,7 +297,7 @@ export default function InteractiveLanding() {
                 />
               </div>
               <Link href="/">
-                <span className="logo-text">Antônio Garcia</span>
+                <span className="logo-text">AG Music</span>
               </Link>
             </div>
             {/* Overlay for mobile menu */}
@@ -260,14 +308,15 @@ export default function InteractiveLanding() {
             />
 
             <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`} id="primary-navigation" role="menu">
+              {/* Mesmo enxugamento do estúdio. Não há galeria aqui, e
+                  "Produtor" seria link para a própria página — então o menu
+                  fica com quatro itens. */}
               <li><button onClick={() => scrollToElement('home')} className="nav-link">Início</button></li>
-              <li><button onClick={() => scrollToElement('sobre')} className="nav-link">Sobre</button></li>
               <li><button onClick={() => scrollToElement('servicos')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('portfolio')} className="nav-link">Portfólio</button></li>
-              <li><a href="/estudio" className="nav-link" onClick={() => setIsMenuOpen(false)}>Estúdio</a></li>
-              <li><a href="https://agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
-              <li><a href="https://app.agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
-              <li><button onClick={() => scrollToElement('contato')} className="nav-link">Contato</button></li>
+              <li><Link href="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>Estúdio</Link></li>
+              {/* Direto no app, não na LP: item de menu é intenção de uso. */}
+              <li><a href="https://aglabs.app.br" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
             </ul>
             <button
               type="button"
@@ -287,29 +336,22 @@ export default function InteractiveLanding() {
 
       {/* Hero Section */}
       <section id="home" className="hero">
-        <div className="hero-container">
-          {/* Left Side - Photo */}
-          <div 
-            className="hero-photo"
-            style={{ 
-              transform: `translateY(${scrollY * 0.25}px)`,
-              opacity: Math.max(0, 1 - (scrollY / 800))
-            }}
-          >
-            <div className="hero-photo-frame">
-              <Image
-                src={getImagePath('fotoPerformance')}
-                alt="Antônio Garcia tocando violão"
-                fill
-                className="hero-photo-img"
-                sizes="(max-width: 768px) 100vw, 40vw"
-                priority
-              />
-            </div>
-          </div>
+        {/* A foto é o fundo da seção, não um card. A moldura com sombra e
+            rotação no hover chamava mais atenção que o próprio texto; como
+            fundo ela ambienta e o conteúdo volta a ser o assunto. */}
+        <div className="hero-bg">
+          <Image
+            src={getImagePath('fotoPerformance')}
+            alt="Antônio Garcia tocando violão"
+            fill
+            className="hero-bg-img"
+            sizes="100vw"
+            priority
+          />
+        </div>
 
-          {/* Right Side - Content */}
-          <div 
+        <div className="hero-container">
+          <div
             className="hero-content"
             style={{ 
               transform: `translateY(${scrollY * 0.25}px)`,
@@ -351,20 +393,20 @@ export default function InteractiveLanding() {
 
       {/* Sobre Section */}
       <section id="sobre" className="sobre">
+        {/* Mesmo tratamento do hero: a foto sai do card e vira fundo. Aqui ela
+            fica à esquerda, espelhando o hero, que abre para a direita. */}
+        <div className="sobre-bg">
+          <Image
+            src={getImagePath('fotoPerfil')}
+            alt="Antônio Garcia"
+            fill
+            className="sobre-bg-img"
+            sizes="100vw"
+          />
+        </div>
+
         <div className="container">
           <div className="sobre-content">
-            <div className="sobre-image">
-              <div className="sobre-image-frame">
-                <Image
-                  src={getImagePath('fotoPerfil')}
-                  alt="Antônio Garcia"
-                  fill
-                  className="sobre-image-img"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-                />
-              </div>
-            </div>
             <div className="sobre-text">
               <h2 id="titulo-sobre-mim" className="section-title">Sobre Mim</h2>
               <div className="title-underline"></div>
@@ -400,55 +442,7 @@ export default function InteractiveLanding() {
           <div className="title-underline"></div>
           <p className="section-subtitle">Soluções completas para sua música</p>
           
-          <div className="servicos-grid">
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-music"></i>
-              </div>
-              <h3>Produção Musical</h3>
-              <p>Criação completa de arranjos, programação de instrumentos e direção artística para seu projeto musical.</p>
-            </div>
-
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-microphone-alt"></i>
-              </div>
-              <h3>Gravação Profissional</h3>
-              <p>Gravação de voz e instrumentos em estúdio com equipamentos de alta qualidade e acústica tratada.</p>
-            </div>
-
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-sliders-h"></i>
-              </div>
-              <h3>Mixagem & Masterização</h3>
-              <p>Balanceamento profissional e finalização da sua música para streaming, rádio e outras plataformas.</p>
-            </div>
-
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-cut"></i>
-              </div>
-              <h3>Edição & Pós-Produção</h3>
-              <p>Edição precisa de áudio, correção de timing, afinação e limpeza de ruídos indesejados.</p>
-            </div>
-
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-guitar"></i>
-              </div>
-              <h3>Gravação de Instrumentos</h3>
-              <p>Sessões com músicos profissionais para complementar seu projeto com performances de alta qualidade.</p>
-            </div>
-
-            <div className="servico-card">
-              <div className="servico-icon">
-                <i className="fas fa-chalkboard-teacher"></i>
-              </div>
-              <h3>Consultoria Musical</h3>
-              <p>Orientação completa sobre produção, desde a pré-produção até estratégias de lançamento.</p>
-            </div>
-          </div>
+          <ServiceCarousel items={SERVICOS} />
         </div>
       </section>
 
@@ -617,8 +611,6 @@ export default function InteractiveLanding() {
         </div>
       </footer>
 
-      {/* Chatbot */}
-      <Chatbot />
     </>
   )
 }

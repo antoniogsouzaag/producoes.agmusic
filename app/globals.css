@@ -338,6 +338,64 @@ body.no-scroll {
       rgba(0, 212, 255, 0.09) 0%,
       transparent 70%);
   pointer-events: none;
+  /* Acima da foto de fundo, para o tom da marca continuar lavando a seção. */
+  z-index: 2;
+}
+
+/* Foto do hero como fundo da seção.
+   Antes era um card à direita, com moldura, sombra rosa e rotação no hover —
+   o recorte competia com o texto. Como fundo, ela ambienta a seção e o
+   conteúdo volta a ser o assunto. */
+/* Ocupa só a metade direita — a esquerda é do texto, sobre fundo sólido.
+   Cobrir a seção inteira e escurecer com véu deixava o texto por cima da foto,
+   que é o que estava errado. */
+.hero-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 42%;
+  z-index: 1;
+  /* A borda esquerda dissolve no fundo em vez de cortar reto na metade. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 24%);
+}
+
+.hero-bg-img {
+  object-fit: cover;
+  /* Ancorado pelo topo: com "center" o corte vertical comia um pedaço da
+     cabeça do produtor. Preso no topo, a sobra sai sempre pelo pé da foto. */
+  object-position: 50% top;
+  filter: contrast(1.1) saturate(1.15);
+}
+
+/* Só o pé, para a foto encontrar a próxima seção sem emenda. */
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #0a0a0a 0%, transparent 32%);
+}
+
+@media (max-width: 968px) {
+  /* Numa coluna só não há "outro lado": a foto volta a cobrir a seção e o véu
+     vertical é o que mantém o texto legível. */
+  .hero-bg {
+    left: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .hero-bg-img {
+    object-position: 50% top;
+  }
+
+  .hero-bg::after {
+    background: linear-gradient(180deg,
+        rgba(10, 10, 10, 0.82) 0%,
+        rgba(10, 10, 10, 0.78) 45%,
+        #0a0a0a 100%);
+  }
 }
 
 .hero-container {
@@ -351,71 +409,6 @@ body.no-scroll {
   max-width: 1200px;
   padding: 0 20px;
   margin: 0 auto;
-}
-
-.hero-photo {
-  position: relative;
-  height: 80vh;
-  min-height: 500px;
-  order: 2;
-  /* Garantir que a foto esteja na frente */
-  z-index: 3;
-}
-
-.hero-photo-frame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 30px;
-  overflow: hidden;
-  /* GPU acceleration */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  /* Modern effects */
-  box-shadow: 0 25px 60px rgba(255, 0, 128, 0.2), 0 10px 25px rgba(0, 0, 0, 0.3);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.hero-photo-frame::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg,
-      rgba(255, 0, 128, 0.1) 0%,
-      transparent 30%,
-      transparent 70%,
-      rgba(0, 212, 255, 0.1) 100%);
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-}
-
-.hero-photo-frame:hover {
-  transform: scale(1.05) rotateY(5deg);
-  box-shadow: 0 35px 80px rgba(255, 0, 128, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 0, 128, 0.3);
-}
-
-.hero-photo-frame:hover::before {
-  opacity: 1;
-}
-
-.hero-photo-img {
-  object-fit: cover;
-  object-position: center;
-  /* Image optimization */
-  image-rendering: -webkit-optimize-contrast;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: contrast(1.1) saturate(1.2);
-}
-
-.hero-photo-frame:hover .hero-photo-img {
-  transform: scale(1.1);
 }
 
 @keyframes fadeInLeft {
@@ -475,7 +468,9 @@ body.no-scroll {
 
 .btn {
   padding: 15px 35px;
-  border-radius: 50px;
+  /* Raio pequeno em vez de pill: o pill dava cara de tag ao botão e brigava
+     com o resto da interface, que já usa 8-12px. */
+  border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -670,25 +665,6 @@ body.no-scroll {
   }
 
   /* Foto à direita (42%) - com espaçamento superior para centralização */
-  .hero-photo {
-    order: 2;
-    flex: 0 0 calc(42% - 0.5rem);
-    height: 55vh;
-    min-height: 300px;
-    max-height: 420px;
-    display: flex;
-    align-items: flex-start;
-    margin-top: 5.5rem;
-    /* Mais espaçamento superior para centralizar com texto */
-  }
-
-  .hero-photo-frame {
-    border-radius: 20px;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
   .hero-brand {
     font-size: 2rem;
     line-height: 1.1;
@@ -795,7 +771,62 @@ body.no-scroll {
   align-items: center;
 }
 
+/* Foto do "Sobre" como fundo da seção — mesmo motivo do hero: sai a moldura
+   arredondada com sombra, entra a imagem ambientando a seção. Fica à esquerda
+   porque o texto ocupa a coluna 2. */
+/* Espelho do hero: aqui a foto fica na metade esquerda, porque o texto ocupa
+   a coluna 2. */
+.sobre-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 45%;
+  z-index: 0;
+  -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 24%);
+  mask-image: linear-gradient(270deg, transparent 0%, #000 24%);
+}
+
+.sobre-bg-img {
+  object-fit: cover;
+  object-position: 40% center;
+  filter: contrast(1.05) saturate(1.1);
+}
+
+/* Topo e pé esfumam para a seção não brigar com as vizinhas. */
+.sobre-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, var(--dark-bg) 0%, transparent 22%),
+    linear-gradient(180deg, var(--dark-bg) 0%, transparent 20%);
+}
+
+@media (max-width: 968px) {
+  /* Coluna única: a foto cobre a seção e o véu vira vertical. */
+  .sobre-bg {
+    right: 0;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .sobre-bg-img {
+    object-position: 45% center;
+  }
+
+  .sobre-bg::after {
+    background: linear-gradient(180deg,
+        var(--dark-bg) 0%,
+        rgba(10, 10, 10, 0.8) 35%,
+        rgba(10, 10, 10, 0.9) 70%,
+        var(--dark-bg) 100%);
+  }
+}
+
 .sobre .container {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
@@ -811,11 +842,6 @@ body.no-scroll {
   display: contents;
 }
 
-.sobre-image {
-  grid-column: 1;
-  grid-row: 1 / 3;
-}
-
 .sobre-text {
   grid-column: 2;
   grid-row: 1;
@@ -827,85 +853,7 @@ body.no-scroll {
   align-self: start;
 }
 
-.sobre-image {
-  position: relative;
-  height: 70vh;
-  min-height: 450px;
-  z-index: 3;
-  /* Garantir que a imagem esteja na frente */
-  grid-column: 1;
-  grid-row: 1 / 3;
-}
-
-.sobre-image-frame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 30px;
-  overflow: hidden;
-  /* GPU acceleration */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  /* Modern effects */
-  box-shadow: 0 20px 50px rgba(0, 212, 255, 0.2), 0 8px 20px rgba(0, 0, 0, 0.3);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.sobre-image-frame::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg,
-      rgba(0, 212, 255, 0.15) 0%,
-      transparent 30%,
-      transparent 70%,
-      rgba(255, 0, 128, 0.15) 100%);
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-}
-
-.sobre-image-frame:hover {
-  transform: scale(1.03) rotateX(-2deg);
-  box-shadow: 0 30px 70px rgba(0, 212, 255, 0.3), 0 15px 30px rgba(0, 0, 0, 0.5);
-  border-color: rgba(0, 212, 255, 0.3);
-}
-
-.sobre-image-frame:hover::before {
-  opacity: 1;
-}
-
-.sobre-image-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  /* Otimização de performance */
-  image-rendering: -webkit-optimize-contrast;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
-  filter: contrast(1.05) saturate(1.1) brightness(1.05);
-}
-
-.sobre-image-frame:hover .sobre-image-img {
-  transform: scale(1.08);
-  filter: contrast(1.15) saturate(1.3) brightness(1.1);
-}
-
 /* Força desabilitar seleção em todos os elementos */
-.sobre-image *,
-.sobre-image *::before,
-.sobre-image *::after {
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -webkit-user-drag: none !important;
-  -webkit-touch-callout: none !important;
-}
-
 @keyframes fadeInLeft {
   from {
     opacity: 0;
@@ -1025,85 +973,170 @@ body.no-scroll {
   background: var(--dark-bg);
 }
 
-.servicos-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+/* ── Carousel de serviços ────────────────────────────────────────────────
+   Substitui as grades .servicos-grid e .services-detailed-grid, que
+   empilhavam seis cards altos e faziam a seção ocupar duas telas de rolagem.
+   Usado nas duas páginas — bio e estúdio. */
+
+.service-carousel {
+  position: relative;
   margin-top: 3rem;
+  /* Sem isto o arraste vira seleção de texto: o embla escuta o ponteiro, mas
+     não impede a seleção nativa, e o gesto acabava marcando o título do card
+     em vez de andar o carousel. */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.servico-card {
-  background: var(--dark-secondary);
-  padding: 2.5rem;
-  border-radius: 20px;
-  text-align: center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid transparent;
-  /* GPU acceleration */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  /* Initial shadow */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
+/* touch-action não herda, então precisa alcançar quem recebe o ponteiro —
+   inclusive a viewport que o shadcn cria por dentro. pan-y mantém a rolagem
+   vertical da página funcionando enquanto o embla fica com o eixo horizontal. */
+.service-carousel,
+.service-carousel * {
+  touch-action: pan-y;
 }
 
-.servico-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 0, 128, 0.1),
-      transparent);
-  transition: left 0.6s ease;
-  z-index: 0;
+/* A terceira causa do arraste morto: soltar o ponteiro sobre a foto iniciava
+   o drag nativo de imagem do browser, com aquele fantasma seguindo o cursor,
+   e o embla nunca via o gesto. */
+.service-carousel img {
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 
-.servico-card>* {
-  position: relative;
-  z-index: 1;
-}
-
-.servico-card:hover {
-  transform: translateY(-15px) scale(1.02);
-  border-color: var(--primary-color);
-  box-shadow:
-    0 25px 60px rgba(255, 0, 128, 0.3),
-    0 15px 35px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.servico-card:hover::before {
-  left: 100%;
-}
-
-.servico-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1.5rem;
-  background: var(--gradient-1);
-  border-radius: 50%;
+.service-carousel-nav {
   display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.service-carousel-arrow {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  color: white;
-}
-
-.servico-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--dark-secondary);
   color: var(--text-light);
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
 }
 
-.servico-card p {
+.service-carousel-arrow:hover:not(:disabled) {
+  background: var(--dark-tertiary);
+  border-color: var(--primary-color);
+}
+
+.service-carousel-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.service-slide {
+  position: relative;
+  width: 320px;
+  height: 27rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.service-slide-img {
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-slide:hover .service-slide-img {
+  transform: scale(1.06);
+}
+
+/* O texto fica sobre a foto, então o véu é o que garante contraste. */
+.service-slide-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      rgba(10, 10, 10, 0.15) 0%,
+      rgba(10, 10, 10, 0.72) 55%,
+      rgba(10, 10, 10, 0.96) 100%);
+}
+
+.service-slide-body {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.75rem;
+}
+
+/* Ancorado no topo esquerdo do card, não no fluxo do texto: assim ele fica na
+   mesma altura em todos os slides, mesmo com descrições de tamanhos
+   diferentes. E o gradiente pinta o próprio glifo — antes era uma caixa
+   gradiente com o ícone branco vazado dentro. */
+.service-slide-icon {
+  position: absolute;
+  top: 1.15rem;
+  left: 1.15rem;
+  z-index: 2;
+  font-size: 1.25rem;
+  line-height: 1;
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  /* O topo do card é a parte mais clara da foto; a sombra segura o contraste. */
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7));
+}
+
+.service-slide-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+}
+
+.service-slide-text {
+  font-size: 0.92rem;
+  line-height: 1.55;
   color: var(--text-gray);
-  line-height: 1.6;
-  font-size: 1rem;
+}
+
+.service-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.service-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition: background 0.3s ease, width 0.3s ease;
+}
+
+.service-carousel-dot.is-active {
+  width: 24px;
+  background: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .service-slide {
+    width: 78vw;
+    max-width: 320px;
+    height: 24rem;
+  }
+
+  /* No mobile a navegação é o arrasto; as setas só ocupariam espaço. */
+  .service-carousel-nav {
+    display: none;
+  }
 }
 
 /* Responsive */
@@ -1154,11 +1187,6 @@ body.no-scroll {
     display: block;
   }
 
-  .sobre-image {
-    grid-column: auto;
-    grid-row: auto;
-  }
-
   .sobre-text {
     grid-column: auto;
     grid-row: auto;
@@ -1170,34 +1198,6 @@ body.no-scroll {
   }
 
   /* FOTO - À esquerda (40%) - igual hero-photo */
-  .sobre-image {
-    order: 1;
-    flex: 0 0 calc(40% - 0.5rem);
-    width: calc(40% - 0.5rem);
-    height: auto;
-    min-height: 280px;
-    max-height: 380px;
-    display: flex;
-    align-items: flex-start;
-    grid-column: auto;
-    grid-row: auto;
-  }
-
-  .sobre-image-frame {
-    border-radius: 20px;
-    width: 100%;
-    height: 100%;
-    min-height: 280px;
-    overflow: hidden;
-  }
-
-  .sobre-image-img {
-    object-fit: cover;
-    object-position: center top;
-    width: 100%;
-    height: 100%;
-  }
-
   /* TEXTO - À direita (57%) - igual hero-content */
   .sobre-text {
     position: relative;
@@ -1297,35 +1297,6 @@ body.no-scroll {
     padding: 60px 0;
   }
 
-  .servicos-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 0 10px;
-    margin-top: 2rem;
-  }
-
-  .servico-card {
-    padding: 2rem 1.5rem;
-    border-radius: 16px;
-  }
-
-  .servico-icon {
-    width: 70px;
-    height: 70px;
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-  }
-
-  .servico-card h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .servico-card p {
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-
   /* Gêneros Section Mobile */
   .generos {
     padding: 50px 0;
@@ -1341,18 +1312,6 @@ body.no-scroll {
   .genero-tag {
     padding: 0.8rem 1.5rem;
     font-size: 0.95rem;
-  }
-
-  .servico-card h2 {
-    font-size: 1.5rem;
-  }
-
-  .servico-card h3 {
-    font-size: 1.3rem;
-  }
-
-  .servico-card p {
-    font-size: 0.9rem;
   }
 
   /* Gêneros Mobile */
@@ -1667,24 +1626,6 @@ body.no-scroll {
   }
 
   /* Foto à direita (42%) */
-  .hero-photo {
-    order: 2;
-    flex: 0 0 calc(42% - 0.5rem);
-    height: 58vh;
-    min-height: 320px;
-    max-height: 450px;
-    display: flex;
-    align-items: flex-start;
-    margin-top: 5rem;
-  }
-
-  .hero-photo-frame {
-    border-radius: 20px;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
   .hero-brand {
     font-size: 2.1rem;
     line-height: 1.1;
@@ -1798,11 +1739,6 @@ body.no-scroll {
     padding-bottom: 0;
   }
 
-  .sobre-image {
-    grid-column: auto;
-    grid-row: auto;
-  }
-
   .sobre-text {
     grid-column: auto;
     grid-row: auto;
@@ -1814,33 +1750,6 @@ body.no-scroll {
   }
 
   /* FOTO - À esquerda (40%) */
-  .sobre-image {
-    order: 1;
-    flex: 0 0 calc(40% - 0.5rem);
-    width: calc(40% - 0.5rem);
-    height: auto;
-    min-height: 290px;
-    max-height: 390px;
-    display: flex;
-    align-items: flex-start;
-    margin-top: 4rem;
-  }
-
-  .sobre-image-frame {
-    border-radius: 20px;
-    width: 100%;
-    height: 100%;
-    min-height: 290px;
-    overflow: hidden;
-  }
-
-  .sobre-image-img {
-    object-fit: cover;
-    object-position: center top;
-    width: 100%;
-    height: 100%;
-  }
-
   /* TEXTO - À direita (57%) */
   .sobre-text {
     position: relative;
@@ -1935,24 +1844,6 @@ body.no-scroll {
   }
 
   .section-subtitle {
-    font-size: 0.85rem;
-  }
-
-  .servico-card {
-    padding: 1.5rem 1.2rem;
-  }
-
-  .servico-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
-
-  .servico-card h3 {
-    font-size: 1.1rem;
-  }
-
-  .servico-card p {
     font-size: 0.85rem;
   }
 
@@ -2092,24 +1983,6 @@ body.no-scroll {
   }
 
   /* Foto à direita (42%) */
-  .hero-photo {
-    order: 2;
-    flex: 0 0 calc(42% - 0.5rem);
-    height: 58vh;
-    min-height: 320px;
-    max-height: 450px;
-    display: flex;
-    align-items: flex-start;
-    margin-top: 5rem;
-  }
-
-  .hero-photo-frame {
-    border-radius: 20px;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
   .hero-brand {
     font-size: 2rem;
     line-height: 1.1;
@@ -2225,11 +2098,6 @@ body.no-scroll {
     padding-bottom: 0;
   }
 
-  .sobre-image {
-    grid-column: auto;
-    grid-row: auto;
-  }
-
   .sobre-text {
     grid-column: auto;
     grid-row: auto;
@@ -2241,33 +2109,6 @@ body.no-scroll {
   }
 
   /* FOTO - À esquerda (40%) */
-  .sobre-image {
-    order: 1;
-    flex: 0 0 calc(40% - 0.5rem);
-    width: calc(40% - 0.5rem);
-    height: auto;
-    min-height: 280px;
-    max-height: 380px;
-    display: flex;
-    align-items: flex-start;
-    margin-top: 4rem;
-  }
-
-  .sobre-image-frame {
-    border-radius: 20px;
-    width: 100%;
-    height: 100%;
-    min-height: 280px;
-    overflow: hidden;
-  }
-
-  .sobre-image-img {
-    object-fit: cover;
-    object-position: center top;
-    width: 100%;
-    height: 100%;
-  }
-
   /* TEXTO - À direita (57%) */
   .sobre-text {
     position: relative;
@@ -2370,17 +2211,6 @@ body.no-scroll {
     max-width: 100%;
   }
 
-  .hero-photo {
-    height: 65vh;
-    min-height: 450px;
-    max-height: 550px;
-    order: 2;
-  }
-
-  .hero-photo-frame {
-    border-radius: 25px;
-  }
-
   .hero-content {
     order: 1;
     padding-left: 1.5rem;
@@ -2470,20 +2300,6 @@ body.no-scroll {
     display: contents;
   }
 
-  .sobre-image {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    height: 65vh;
-    min-height: 450px;
-    max-height: 550px;
-  }
-
-  .sobre-image-frame {
-    border-radius: 25px;
-    width: 100%;
-    height: 100%;
-  }
-
   .sobre-text {
     grid-column: 2;
     grid-row: 1;
@@ -2550,32 +2366,6 @@ body.no-scroll {
     padding: 0 40px;
   }
 
-  .servicos-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
-  }
-
-  .servico-card {
-    padding: 2.5rem 2rem;
-  }
-
-  .servico-icon {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .servico-card h3 {
-    font-size: 1.45rem;
-    margin-bottom: 1rem;
-  }
-
-  .servico-card p {
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-
   /* Portfólio - Tablets */
   .portfolio {
     padding: 100px 0;
@@ -2640,23 +2430,7 @@ body.no-scroll {
     padding: 0 15px;
   }
 
-  .hero-photo {
-    height: 50vh;
-    min-height: 300px;
-  }
-
   /* Sobre Section - telas pequenas (480px) */
-  .sobre-image {
-    flex: 0 0 calc(38% - 0.5rem);
-    width: calc(38% - 0.5rem);
-    min-height: 250px;
-    max-height: 350px;
-  }
-
-  .sobre-image-frame {
-    min-height: 250px;
-  }
-
   .sobre-text {
     flex: 1 1 calc(58% - 0.5rem);
     min-width: calc(58% - 0.5rem);
@@ -2758,7 +2532,8 @@ body.no-scroll {
 .genero-tag {
   background: var(--dark-secondary);
   padding: 0.8rem 2rem;
-  border-radius: 50px;
+  /* Acompanha o .btn: pill isolado no meio de botões retos destoava. */
+  border-radius: 8px;
   color: var(--text-light);
   border: 2px solid transparent;
   transition: all 0.3s ease;
@@ -3140,65 +2915,178 @@ body.no-scroll {
       var(--dark-secondary) 100%);
 }
 
-.equipment-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+/* ── Seletor de equipamentos ─────────────────────────────────────────────
+   Painéis que se abrem ao clicar, no lugar da grade de seis cards com
+   quatro bullets cada. O estilo vem para cá em vez do <style jsx> do
+   componente original, que é onde mora o resto do CSS do site. */
+
+.equip-selector {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  height: 420px;
   margin-top: 3rem;
+  overflow: hidden;
 }
 
-.equipment-category {
-  background: var(--dark-secondary);
-  padding: 2.5rem;
-  border-radius: 20px;
-  text-align: center;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
+.equip-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1 1 0%;
+  min-width: 66px;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  background-color: var(--dark-secondary);
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #292929;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  /* Estado inicial da entrada escalonada; .is-revealed solta. */
+  opacity: 0;
+  transform: translateX(-45px);
+  transition: flex-grow 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.5s ease,
+    box-shadow 0.5s ease;
 }
 
-.equipment-category:hover {
-  transform: translateY(-10px);
+.equip-panel.is-revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.equip-panel.is-active {
+  flex-grow: 7;
   border-color: var(--primary-color);
-  box-shadow: 0 10px 40px rgba(255, 0, 128, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  z-index: 2;
 }
 
-.equipment-icon {
-  width: 80px;
-  height: 80px;
-  background: var(--gradient-1);
-  border-radius: 50%;
+.equip-panel-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      rgba(10, 10, 10, 0.1) 0%,
+      rgba(10, 10, 10, 0.55) 55%,
+      rgba(10, 10, 10, 0.95) 100%);
+}
+
+/* Ancorada no pé do painel, com altura fixa e fora do fluxo.
+   Enquanto ela ficava no fluxo, o texto do painel fechado — invisível, mas
+   ainda ocupando espaço — quebrava em várias linhas numa coluna de 60px e
+   empurrava o ícone para uma altura diferente em cada painel. Era isso que
+   fazia o ícone dançar durante a animação. Agora ele fica parado, alinhado
+   com os demais, e a expansão só revela o texto. */
+.equip-panel-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.25rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 1rem;
+  gap: 0.9rem;
+}
+
+/* Só o glifo, pintado pelo gradiente — mesma linguagem dos cards de serviço.
+   Largura fixa: sem isso ele encolhe junto com o painel fechado. */
+.equip-panel-icon {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  color: white;
-  margin: 0 auto 1.5rem;
+  width: 26px;
+  font-size: 1.3rem;
+  line-height: 1;
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7));
 }
 
-.equipment-category h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+.equip-panel-info {
+  display: block;
+  min-width: 0;
+  /* Nunca quebra linha: o texto não pode alterar a altura da etiqueta, senão
+     o ícone volta a se deslocar. O excedente fica escondido pelo painel. */
+  white-space: pre;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.equip-panel.is-active .equip-panel-info {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.equip-panel-title {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: var(--text-light);
+  white-space: nowrap;
 }
 
-.equipment-list {
-  list-style: none;
-  padding: 0;
-}
-
-.equipment-list li {
+.equip-panel-desc {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
   color: var(--text-gray);
-  margin-bottom: 0.5rem;
-  padding-left: 1rem;
-  position: relative;
-  text-align: left;
 }
 
-.equipment-list li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: var(--secondary-color);
+@media (max-width: 900px) {
+  /* Painel fechado de 62px de largura não cabe no celular: a faixa vira
+     lista vertical e a expansão passa a ser em altura. */
+  .equip-selector {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .equip-panel {
+    min-height: 74px;
+    transform: translateY(-25px);
+    transition: flex-grow 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+      min-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.6s ease,
+      transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.5s ease;
+  }
+
+  .equip-panel.is-revealed {
+    transform: translateY(0);
+  }
+
+  .equip-panel.is-active {
+    min-height: 230px;
+  }
+
+  /* Na coluna estreita o texto precisa quebrar; aqui a etiqueta não corre o
+     risco de desalinhar ícone nenhum, porque cada painel ocupa a largura toda. */
+  .equip-panel-info {
+    white-space: normal;
+  }
+
+  .equip-panel-label {
+    height: auto;
+    bottom: 1rem;
+    align-items: flex-start;
+  }
+
+  .equip-panel-icon {
+    margin-top: 0.2rem;
+  }
 }
 
 .equipment-image-showcase {
@@ -3297,53 +3185,6 @@ body.no-scroll {
 .studio-services {
   padding: 100px 0;
   background: var(--dark-bg);
-}
-
-.services-detailed-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-  margin-top: 3rem;
-}
-
-.service-detailed-card {
-  background: var(--dark-secondary);
-  padding: 2.5rem;
-  border-radius: 20px;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.service-detailed-card:hover {
-  transform: translateY(-10px);
-  border-color: var(--secondary-color);
-  box-shadow: 0 15px 50px rgba(0, 212, 255, 0.3);
-}
-
-.service-detailed-icon {
-  width: 70px;
-  height: 70px;
-  background: var(--gradient-2);
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  color: white;
-  margin: 0 auto 1.5rem;
-}
-
-.service-detailed-card h3 {
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  color: var(--text-light);
-}
-
-.service-detailed-card p {
-  color: var(--text-gray);
-  line-height: 1.7;
-  font-size: 1rem;
 }
 
 /* Gallery Section */
@@ -5501,8 +5342,6 @@ select.form-control {
     box-sizing: border-box;
   }
 
-  .equipment-grid,
-  .services-detailed-grid,
   .gallery-grid {
     grid-template-columns: 1fr;
   }
@@ -5572,13 +5411,6 @@ select.form-control {
     gap: 1rem;
   }
 
-  .sobre-image {
-    flex: 0 0 calc(35% - 0.5rem);
-    width: calc(35% - 0.5rem);
-    min-height: 200px;
-    max-height: 280px;
-  }
-
   .sobre-text {
     flex: 1 1 calc(60% - 0.5rem);
     min-width: calc(60% - 0.5rem);
@@ -5634,20 +5466,6 @@ select.form-control {
     padding: 60px 0;
   }
 
-  .servicos-grid {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-  }
-
-  .servico-card {
-    padding: 1.8rem;
-  }
-
-  .servico-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
 }
 
 /* Tablet específico - consolidado */
@@ -5669,16 +5487,6 @@ select.form-control {
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem;
     padding: 0 20px;
-  }
-
-  .hero-photo {
-    height: 60vh;
-    min-height: 450px;
-    max-height: 550px;
-  }
-
-  .hero-photo-frame {
-    border-radius: 25px;
   }
 
   .hero-content {
@@ -5759,18 +5567,6 @@ select.form-control {
     display: contents;
   }
 
-  .sobre-image {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    height: 60vh;
-    min-height: 450px;
-    max-height: 550px;
-  }
-
-  .sobre-image-frame {
-    border-radius: 25px;
-  }
-
   .sobre-text {
     grid-column: 2;
     grid-row: 1;
@@ -5834,15 +5630,6 @@ select.form-control {
   }
 
   /* Foto à direita */
-  .hero-photo {
-    order: 2;
-    flex: 0 0 calc(42% - 0.4rem);
-    height: 55vh;
-    min-height: 280px;
-    max-height: 400px;
-    margin-top: 4rem;
-  }
-
   .hero-brand {
     font-size: 1.8rem;
     text-align: left;
@@ -5913,19 +5700,6 @@ select.form-control {
   }
 
   /* Sobre - telas muito pequenas - mantém lado a lado */
-  .sobre-image {
-    order: 1;
-    flex: 0 0 calc(38% - 0.4rem);
-    width: calc(38% - 0.4rem);
-    min-height: 220px;
-    max-height: 320px;
-    margin-top: 4rem;
-  }
-
-  .sobre-image-frame {
-    min-height: 220px;
-  }
-
   .sobre-text {
     order: 2;
     flex: 1 1 calc(58% - 0.4rem);
@@ -5993,23 +5767,6 @@ select.form-control {
     font-size: 0.8rem;
   }
 
-  .servico-card {
-    padding: 1.5rem 1rem;
-  }
-
-  .servico-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.3rem;
-  }
-
-  .servico-card h3 {
-    font-size: 1.1rem;
-  }
-
-  .servico-card p {
-    font-size: 0.85rem;
-  }
 }
 
 /* Upload Modal Override */
@@ -6562,25 +6319,11 @@ select.form-control {
   .btn {
     padding: 12px 22px;
     min-height: 44px;
-    border-radius: 12px;
+    border-radius: 8px;
     touch-action: manipulation;
   }
 
   /* Reduce hero image height to avoid overflow and improve performance */
-  .hero-photo {
-    height: 40vh;
-    min-height: 180px;
-    max-height: 320px;
-    border-radius: 16px;
-  }
-
-  .hero-photo-img {
-    object-position: top center;
-    object-fit: cover;
-    width: 100%;
-    height: 100%;
-  }
-
   /* Prevent hero text from fading too early on mobile — keep readable during scroll */
   .hero-content,
   .hero-brand,
@@ -6599,15 +6342,9 @@ select.form-control {
   }
 
   .sobre-content,
-  .servicos-grid,
   .generos-list {
     grid-template-columns: 1fr !important;
     gap: 1.5rem !important;
-  }
-
-  .servico-card {
-    padding: 1.6rem;
-    border-radius: 16px;
   }
 
   .genero-tag {
@@ -6703,8 +6440,6 @@ select.form-control {
 
   /* Images: prevent overflow */
   img,
-  .hero-photo-img,
-  .sobre-image-img,
   .cover-preview img {
     max-width: 100%;
     height: auto;
@@ -6732,27 +6467,6 @@ select.form-control {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
-  }
-
-  /* Ajustes específicos para dispositivos tablet */
-  .hero-photo,
-  .sobre-image {
-    border-radius: 25px;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Garantir que a imagem da seção sobre não quebre */
-  .sobre-image-frame {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  .sobre-image-img {
-    object-fit: cover;
-    object-position: center;
   }
 
   /* Botões e interações */
@@ -6821,11 +6535,6 @@ select.form-control {
   }
 
   /* Reduce hero image height on very small screens to avoid top crop */
-  .hero-photo {
-    height: 35vh;
-    min-height: 160px;
-  }
-
   .btn {
     min-width: 140px;
   }
@@ -6833,11 +6542,6 @@ select.form-control {
   .social-icon {
     width: 44px;
     height: 44px;
-  }
-
-  .sobre-image {
-    height: 42vh;
-    min-height: 220px;
   }
 
   .portfolio-link {
@@ -6900,9 +6604,6 @@ select.form-control {
     font-size: 2.6rem;
   }
 
-  .hero-photo {
-    margin-top: 3rem;
-  }
 }
 
 /* iPad Pro 11" (834x1194) e similares */
@@ -6955,11 +6656,6 @@ select.form-control {
     padding: 120px 0 60px;
   }
 
-  .hero-photo,
-  .sobre-image {
-    height: 55vh;
-    min-height: 350px;
-  }
 }
 
 /* Kindle Fire (800x1280) e tablets similares em portrait */
@@ -6968,19 +6664,6 @@ select.form-control {
     min-height: 90vh;
   }
 
-  .hero-photo {
-    height: 55vh;
-    min-height: 400px;
-  }
-
-  .sobre-image {
-    height: 55vh;
-    min-height: 400px;
-  }
-
-  .servicos-grid {
-    gap: 2rem;
-  }
 }
 
 /* ========================================

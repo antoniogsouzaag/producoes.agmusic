@@ -19,6 +19,17 @@ const nextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
   },
+  // O estúdio passou de /estudio para a raiz. O 301 preserva o que o Google já
+  // indexou e os links externos que apontam para o endereço antigo.
+  async redirects() {
+    return [
+      {
+        source: '/estudio',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
   // Segurança: headers de segurança
   async headers() {
     return [

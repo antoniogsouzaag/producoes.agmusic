@@ -6,7 +6,115 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import ImageGalleryModal from './image-gallery-modal'
+import AudioPlayer from './audio-player'
+import MusicManager from './music-manager'
 import { getImagePath } from '@/lib/image-utils'
+import { ServiceCarousel, type ServiceCarouselItem } from '@/components/ui/service-carousel'
+import { EquipmentSelector, type EquipmentItem } from '@/components/ui/equipment-selector'
+
+interface Music {
+  id: number
+  title: string
+  artist: string
+  url: string
+  coverUrl?: string | null
+  duration?: number | null
+}
+
+// Uma linha por categoria em vez das quatro bullets de antes. No painel
+// fechado só cabe o ícone, e no aberto o que vende é a leitura rápida — a
+// lista completa virava parede de texto que ninguém lia.
+const EQUIPAMENTOS: EquipmentItem[] = [
+  {
+    id: 'inputs',
+    title: 'Inputs',
+    description: 'Microfones condensadores, amplificadores e pop filters.',
+    icon: 'fas fa-microphone',
+    image: getImagePath('estudio2'),
+  },
+  {
+    id: 'mesa',
+    title: 'Mesa & Áudio',
+    description: 'Mixagem digital na DAW, interface profissional e pré-amps valvulados.',
+    icon: 'fas fa-sliders-h',
+    image: getImagePath('console1'),
+  },
+  {
+    id: 'digital',
+    title: 'Produção Digital',
+    description: 'Workstation de alta performance, monitores ativos e controladores MIDI.',
+    icon: 'fas fa-desktop',
+    image: getImagePath('estudio1'),
+  },
+  {
+    id: 'instrumentos',
+    title: 'Instrumentos',
+    description: 'Piano digital, guitarras, baixos e bateria VST premium.',
+    icon: 'fas fa-music',
+    image: getImagePath('equipamentos'),
+  },
+  {
+    id: 'amplificacao',
+    title: 'Amplificação',
+    description: 'Valvulados premium, monitores de referência e fones profissionais.',
+    icon: 'fas fa-volume-up',
+    image: getImagePath('salaGeral'),
+  },
+  {
+    id: 'processamento',
+    title: 'Processamento',
+    description: 'Compressores, equalizadores, reverbs e gates dinâmicos.',
+    icon: 'fas fa-cogs',
+    image: getImagePath('estudio3'),
+  },
+]
+
+// Mesma leitura da página do produtor, com os textos mais detalhados que já
+// existiam aqui. Cada card usa uma foto do próprio estúdio.
+const SERVICOS_ESTUDIO: ServiceCarouselItem[] = [
+  {
+    id: 'gravacao',
+    title: 'Gravação Profissional',
+    description: 'Gravação de voz, instrumentos acústicos e elétricos em ambiente tratado acusticamente, com técnicas de microfonação profissionais.',
+    icon: 'fas fa-microphone-alt',
+    image: getImagePath('estudio2'),
+  },
+  {
+    id: 'mixagem',
+    title: 'Mixagem & Masterização',
+    description: 'Processamento detalhado de cada elemento, equalização, compressão, efeitos e balanceamento final para streaming, rádio e outras plataformas.',
+    icon: 'fas fa-sliders-h',
+    image: getImagePath('console1'),
+  },
+  {
+    id: 'instrumentos',
+    title: 'Gravação de Instrumentos',
+    description: 'Sessões com músicos profissionais disponíveis: guitarras, baixo, teclados, bateria e outros instrumentos para complementar seu projeto.',
+    icon: 'fas fa-guitar',
+    image: getImagePath('equipamentos'),
+  },
+  {
+    id: 'edicao',
+    title: 'Edição & Pós-Produção',
+    description: 'Edição de timing, afinação, limpeza de ruídos, comping vocal e alinhamento rítmico — cada take pronto antes de ir para a mixagem.',
+    icon: 'fas fa-cut',
+    image: getImagePath('estudio3'),
+  },
+  {
+    id: 'consultoria',
+    title: 'Consultoria & Mentoria',
+    description: 'Orientação sobre produção musical, da pré-produção às estratégias de lançamento. Mentoria para produtores iniciantes e artistas.',
+    icon: 'fas fa-chalkboard-teacher',
+    image: getImagePath('salaGeral'),
+  },
+  {
+    id: 'completa',
+    title: 'Produção Completa',
+    description: 'Do arranjo inicial à masterização final: gravação, edição e mixagem num pacote só, pronto para distribuição.',
+    icon: 'fas fa-compact-disc',
+    image: getImagePath('estudio1'),
+  },
+]
 
 // Configuração das imagens da galeria (6 imagens)
 const GALLERY_IMAGES = [
@@ -51,6 +159,37 @@ export default function StudioPage() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [galleryIndex, setGalleryIndex] = useState(0)
 
+  // Portfólio
+  const [musics, setMusics] = useState<Music[]>([])
+  const [isLoadingMusics, setIsLoadingMusics] = useState(true)
+
+  const loadMusics = async () => {
+    setIsLoadingMusics(true)
+    try {
+      const response = await fetch('/api/music/list', { cache: 'no-store' })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setMusics(data.musics || [])
+
+      if (data.error && data.musics?.length === 0) {
+        console.warn('Database temporarily unavailable:', data.error)
+      }
+    } catch (error) {
+      console.error('Error loading musics:', error)
+      setMusics([])
+    } finally {
+      setIsLoadingMusics(false)
+    }
+  }
+
+  useEffect(() => {
+    loadMusics()
+  }, [])
+
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY)
@@ -86,6 +225,11 @@ export default function StudioPage() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isMenuOpen])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setIsMenuOpen(false)
+  }
 
   const scrollToElement = (elementId: string) => {
     const element = document.getElementById(elementId)
@@ -168,7 +312,7 @@ export default function StudioPage() {
                   sizes="40px"
                 />
               </div>
-              <span className="logo-text">Antônio Garcia</span>
+              <span className="logo-text">AG Music</span>
             </Link>
             {/* Overlay para o menu mobile */}
             <div
@@ -178,14 +322,18 @@ export default function StudioPage() {
             />
 
             <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`} id="primary-navigation" role="menu">
-              <li><Link href="/" className="nav-link">Início</Link></li>
-              <li><button onClick={() => scrollToElement('sobre-estudio')} className="nav-link">Sobre</button></li>
-              <li><button onClick={() => scrollToElement('equipamentos')} className="nav-link">Equipamentos</button></li>
+              {/* Esta página é a raiz: "Início" sobe, não navega. Sobre,
+                  Equipamentos, Serviços e Contato saíram do menu — as seções
+                  continuam na página, alcançadas pela rolagem e pelos botões
+                  do CTA. */}
+              <li><button onClick={() => scrollToTop()} className="nav-link">Início</button></li>
               <li><button onClick={() => scrollToElement('servicos-estudio')} className="nav-link">Serviços</button></li>
               <li><button onClick={() => scrollToElement('galeria')} className="nav-link">Galeria</button></li>
-              <li><a href="https://agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>AG Home</a></li>
-              <li><a href="https://app.agmusic.cloud" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
-              <li><button onClick={() => scrollToElement('contato-estudio')} className="nav-link">Contato</button></li>
+              <li><button onClick={() => scrollToElement('portfolio-estudio')} className="nav-link">Portfólio</button></li>
+              <li><Link href="/bio" className="nav-link" onClick={() => setIsMenuOpen(false)}>Produtor</Link></li>
+              {/* Direto no app: quem clica num menu escrito "App" já sabe o que
+                  quer. A LP é a página descritiva, para quem ainda decide. */}
+              <li><a href="https://aglabs.app.br" className="nav-link" onClick={() => setIsMenuOpen(false)}>App</a></li>
             </ul>
             <button
               type="button"
@@ -280,85 +428,7 @@ export default function StudioPage() {
           <div className="title-underline"></div>
           <p className="section-subtitle">Tecnologia de ponta para resultados profissionais</p>
           
-          <div className="equipment-grid">
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-microphone"></i>
-              </div>
-              <h3>Inputs</h3>
-              <ul className="equipment-list">
-                <li>Microfones condensadores de estúdio</li>
-                <li>Amplificadores para instrumentos</li>
-                <li>Instrumentos profissionais para captação</li>
-                <li>Pop filters e anti-reflexo</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-sliders-h"></i>
-              </div>
-              <h3>Mesa & Áudio</h3>
-              <ul className="equipment-list">
-                <li>Mesa de mixagem digital na DAW</li>
-                <li>Interface de áudio profissional</li>
-                <li>Pluguins Pré-amplificadores valvulados</li>
-                <li>Pluguins Compressores e equalizadores Premium</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-desktop"></i>
-              </div>
-              <h3>Produção Digital</h3>
-              <ul className="equipment-list">
-                <li>Workstation de alta performance</li>
-                <li>Monitores de referência ativos</li>
-                <li>Plugins profissionais premium</li>
-                <li>Controladores MIDI avançados</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-music"></i>
-              </div>
-              <h3>Instrumentos</h3>
-              <ul className="equipment-list">
-                <li>Piano digital weighted</li>
-                <li>Guitarras e baixos profissionais</li>
-                <li>Bateria VsT MIDI premium</li>
-                <li>Amplificador transistorizado</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-volume-up"></i>
-              </div>
-              <h3>Amplificação</h3>
-              <ul className="equipment-list">
-                <li>Amplificadores valvulados premium</li>
-                <li>Monitores de estúdio de referência</li>
-                <li>Fone de alta performance para graves precisos</li>
-                <li>Sistemas de fones profissionais</li>
-              </ul>
-            </div>
-
-            <div className="equipment-category">
-              <div className="equipment-icon">
-                <i className="fas fa-cogs"></i>
-              </div>
-              <h3>Processamento Digital</h3>
-              <ul className="equipment-list">
-                <li>Compressores analógicos vintage</li>
-                <li>Equalizadores paramétricos</li>
-                <li>Reverbs e delays premium</li>
-                <li>Gates e expansores dinâmicos</li>
-              </ul>
-            </div>
-          </div>
+          <EquipmentSelector items={EQUIPAMENTOS} />
 
           {/* Console Showcase - Imagem menor com descrição */}
           <div className="console-showcase">
@@ -400,67 +470,7 @@ export default function StudioPage() {
           <div className="title-underline"></div>
           <p className="section-subtitle">Soluções completas para sua produção musical</p>
           
-          <div className="services-detailed-grid">
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-microphone-alt"></i>
-              </div>
-              <h3>Gravação Profissional</h3>
-              <p>
-                Gravação de voz, instrumentos acústicos e elétricos em ambiente tratado acusticamente. Utilizamos técnicas de microfonação profissionais e equipamentos de alta qualidade para capturar cada detalhe da sua performance.
-              </p>
-            </div>
-
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-sliders-h"></i>
-              </div>
-              <h3>Mixagem & Masterização</h3>
-              <p>
-                Transformamos suas gravações em uma produção profissional e competitiva. Processamento detalhado de cada elemento, equalização, compressão, efeitos e balanceamento final para streaming, rádio e outras plataformas.
-              </p>
-            </div>
-
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-guitar"></i>
-              </div>
-              <h3>Gravação de Instrumentos</h3>
-              <p>
-                Sessões de gravação com músicos profissionais disponíveis. Guitarras, baixo, teclados, bateria e outros instrumentos. Ideal para quem precisa complementar seu projeto com performances de alta qualidade.
-              </p>
-            </div>
-
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-cut"></i>
-              </div>
-              <h3>Edição & Pós-Produção</h3>
-              <p>
-                Edição detalhada de timing, afinação (pitch correction), limpeza de ruídos, comping vocal e alinhamento rítmico. Garantimos que cada take esteja perfeito antes de partir para a mixagem.
-              </p>
-            </div>
-
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-chalkboard-teacher"></i>
-              </div>
-              <h3>Consultoria & Mentoria</h3>
-              <p>
-                Orientação completa sobre produção musical, desde a pré-produção até estratégias de lançamento. Mentoria para produtores iniciantes e artistas que querem entender melhor o processo de produção.
-              </p>
-            </div>
-
-            <div className="service-detailed-card">
-              <div className="service-detailed-icon">
-                <i className="fas fa-compact-disc"></i>
-              </div>
-              <h3>Produção Completa</h3>
-              <p>
-                Pacote completo de produção musical: desde o arranjo inicial, gravação, edição, mixagem até a masterização final. Ideal para artistas que querem um produto profissional pronto para distribuição.
-              </p>
-            </div>
-          </div>
+          <ServiceCarousel items={SERVICOS_ESTUDIO} />
         </div>
       </section>
 
@@ -505,6 +515,43 @@ export default function StudioPage() {
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
       />
+
+      {/* Portfólio — logo depois da galeria e antes do CTA: a galeria mostra o
+          espaço, o player mostra o que sai dele, e aí o convite para gravar
+          chega com a prova já dada. */}
+      <section id="portfolio-estudio" className="portfolio">
+        <div className="container">
+          <h2 className="section-title">Portfólio</h2>
+          <div className="title-underline"></div>
+          <p className="section-subtitle">Ouça trabalhos gravados aqui</p>
+
+          <div className="portfolio-content">
+            <div className="admin-controls">
+              <MusicManager onUploadSuccess={loadMusics} />
+            </div>
+
+            {isLoadingMusics ? (
+              <div className="portfolio-player">
+                <i className="fas fa-spinner fa-spin"></i>
+                <p>Carregando músicas...</p>
+              </div>
+            ) : (
+              <AudioPlayer musics={musics} onRefresh={loadMusics} />
+            )}
+
+            <div className="portfolio-links" style={{ marginTop: '2rem' }}>
+              <a href="https://www.youtube.com/@AntonioGarcia-xx9sv" target="_blank" rel="noopener noreferrer" className="portfolio-link">
+                <i className="fab fa-youtube"></i>
+                <span>Visite nosso canal no YouTube</span>
+              </a>
+              <a href="https://www.instagram.com/antonio0_/" target="_blank" rel="noopener noreferrer" className="portfolio-link">
+                <i className="fab fa-instagram"></i>
+                <span>Veja mais no Instagram</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="studio-cta">
