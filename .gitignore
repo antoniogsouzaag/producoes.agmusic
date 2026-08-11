@@ -27,3 +27,6 @@ CREDENTIALS.md
 # Credentials file
 CREDENTIALS.md
 CREDENTIALS.pdf
+
+# Artefato incremental do TypeScript: muda a cada tsc, não versionar
+tsconfig.tsbuildinfo
