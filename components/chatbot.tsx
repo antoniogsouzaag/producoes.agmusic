@@ -232,7 +232,9 @@ export default function Chatbot() {
             >
               <div className="message-content">
                 <p>{message.text}</p>
-                <span className="message-time">{formatTime(message.timestamp)}</span>
+                {/* O horário da mensagem inicial é calculado no servidor (UTC) e de novo no
+                    navegador (horário local); a diferença é esperada. */}
+                <span className="message-time" suppressHydrationWarning>{formatTime(message.timestamp)}</span>
               </div>
             </div>
           ))}
